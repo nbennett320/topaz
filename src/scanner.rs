@@ -1,5 +1,12 @@
 use crate::token::{Token, TokenType};
 
+fn is_digit(c: char) -> bool {
+    match c {
+        '0'..='9' => true,
+        _ => false,
+    }
+}
+
 struct Scanner {
     source: String,
     start: usize, // index of beginning of lexeme being scanned
@@ -80,6 +87,7 @@ impl Scanner {
                 Some(self.make_token(token_type))
             }
             '\'' => Some(self.string()),
+            '0'..='9' => Some(self.number()),
             _ => None,
         };
 
@@ -142,6 +150,25 @@ impl Scanner {
             let string = &self.source[self.start..self.pos];
             self.make_token(TokenType::String(String::from(string)))
         }
+    }
+
+    fn number(&mut self) -> Token {
+        while is_digit(self.peek()) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && is_digit(self.peek_next()) {
+            // consume the '.'
+            self.advance();
+
+            while is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+
+        let string = &self.source[self.start..self.pos];
+        let num: f64 = string.parse().unwrap();
+        self.make_token(TokenType::Number(num))
     }
 
     fn skip_whitespace(&mut self) {
@@ -226,5 +253,13 @@ mod tests {
             tokens[0],
             Token::new(TokenType::String(String::from("hello world")), 1, 1, 13)
         );
+    }
+
+    #[test]
+    fn finds_number() {
+        let mut scanner = Scanner::new(String::from("12.34"));
+        let tokens = scanner.scan_all();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0], Token::new(TokenType::Number(12.34), 1, 1, 5));
     }
 }
