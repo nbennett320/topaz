@@ -46,7 +46,7 @@ pub enum TokenType {
     Var,
     While,
 
-	// Misc tokens
+    // Misc tokens
     Error(String),
 }
 
