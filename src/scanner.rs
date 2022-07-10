@@ -52,7 +52,7 @@ mod tests {
 		let mut scanner = Scanner::new(String::from("return"));
 		let tokens = scanner.scan_all();
 		assert_eq!(tokens.len(), 1);
-		assert_eq!(tokens[0], Token::new(TokenType::RETURN, 1, 0, 6));
+		assert_eq!(tokens[0], Token::new(TokenType::Return, 1, 0, 6));
 	}
 
 	#[test]
@@ -60,8 +60,8 @@ mod tests {
 		let mut scanner = Scanner::new(String::from("nil if fn"));
 		let tokens = scanner.scan_all();
 		assert_eq!(tokens.len(), 3);
-		assert_eq!(tokens[0], Token::new(TokenType::NIL, 1, 0, 3));
-		assert_eq!(tokens[1], Token::new(TokenType::IF, 1, 5, 2));
-		assert_eq!(tokens[2], Token::new(TokenType::FN, 1, 8, 2));
+		assert_eq!(tokens[0], Token::new(TokenType::Nil, 1, 0, 3));
+		assert_eq!(tokens[1], Token::new(TokenType::If, 1, 5, 2));
+		assert_eq!(tokens[2], Token::new(TokenType::Fn, 1, 8, 2));
 	}
 }
