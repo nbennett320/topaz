@@ -35,6 +35,29 @@ impl Scanner {
 		let len = self.pos - self.start;
 		Token::new(token_type, self.line, self.start, len)
 	}
+	fn skip_whitespace(&mut self) {
+		loop {
+			match self.peek() {
+				' ' | '\r' | '\t' => {
+					self.advance();
+					()
+				},
+				'\n' => {
+					self.line += 1;
+					self.advance();
+					()
+				},
+				'#' => {
+					while self.peek() != '\n' && !self.eof() {
+						self.advance();
+					}
+					()
+				},
+				_ => break
+			}
+		}
+	}
+
 }
 
 #[cfg(test)]
@@ -63,5 +86,13 @@ mod tests {
 		assert_eq!(tokens[0], Token::new(TokenType::Nil, 1, 0, 3));
 		assert_eq!(tokens[1], Token::new(TokenType::If, 1, 5, 2));
 		assert_eq!(tokens[2], Token::new(TokenType::Fn, 1, 8, 2));
+	}
+
+	#[test]
+	fn ignores_whitespace() {
+		let mut scanner = Scanner::new(String::from("  \tnil"));
+		let tokens = scanner.scan_all();
+		assert_eq!(tokens.len(), 1);
+		assert_eq!(tokens[0], Token::new(TokenType::Nil, 1, 3, 3));
 	}
 }
