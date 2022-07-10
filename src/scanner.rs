@@ -79,6 +79,7 @@ impl Scanner {
                 };
                 Some(self.make_token(token_type))
             }
+            '\'' => Some(self.string()),
             _ => None,
         };
 
@@ -120,6 +121,26 @@ impl Scanner {
         } else {
             self.pos += 1;
             true
+        }
+    }
+
+    fn string(&mut self) -> Token {
+        while self.peek() != '\'' && !self.eof() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+
+            self.advance();
+        }
+
+        if self.eof() {
+            self.error("Unterminated string")
+        } else {
+            // consume closing '
+            self.advance();
+
+            let string = &self.source[self.start..self.pos];
+            self.make_token(TokenType::String(String::from(string)))
         }
     }
 
@@ -185,5 +206,16 @@ mod tests {
         let tokens = scanner.scan_all();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0], Token::new(TokenType::Nil, 1, 3, 3));
+    }
+
+    #[test]
+    fn finds_string() {
+        let mut scanner = Scanner::new(String::from("'hello world'"));
+        let tokens = scanner.scan_all();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(
+            tokens[0],
+            Token::new(TokenType::String(String::from("hello world")), 1, 1, 13)
+        );
     }
 }
