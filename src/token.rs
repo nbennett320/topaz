@@ -46,8 +46,8 @@ pub enum TokenType {
     Var,
     While,
 
+	// Misc tokens
     Error(String),
-    Eof,
 }
 
 #[derive(Debug, PartialEq)]
