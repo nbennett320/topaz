@@ -167,6 +167,15 @@ impl Scanner {
         }
     }
 
+    fn peek_next(&self) -> char {
+        let next = self.pos + 1;
+        if self.eof() {
+            '\0'
+        } else {
+            self.source[next..].chars().next().unwrap()
+        }
+    }
+
     fn eof(&self) -> bool {
         self.pos >= self.source.len()
     }
