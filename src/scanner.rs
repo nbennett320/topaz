@@ -26,15 +26,98 @@ impl Scanner {
 	}
 
 	fn next(&mut self) -> Option<Token> {
+		// ignores whitespace between tokens
+		self.skip_whitespace();
+
 		self.start = self.pos;
 
-		None
+		if self.eof() {
+			return None
+		}
+
+		let tok = match self.peek() {
+			'(' => Some(self.make_token(TokenType::LeftParen)),
+			')' => Some(self.make_token(TokenType::RightParen)),
+			'{' => Some(self.make_token(TokenType::LeftBrace)),
+			'}' => Some(self.make_token(TokenType::RightBrace)),
+			';' => Some(self.make_token(TokenType::Semicolon)),
+			',' => Some(self.make_token(TokenType::Comma)),
+			'.' => Some(self.make_token(TokenType::Dot)),
+			'-' => Some(self.make_token(TokenType::Minus)),
+			'+' => Some(self.make_token(TokenType::Plus)),
+			'/' => Some(self.make_token(TokenType::Slash)),
+			'*' => Some(self.make_token(TokenType::Star)),
+			'!' => {
+				let token_type = if self.matches('=') {
+					TokenType::BangEqual
+				} else {
+					TokenType::Bang
+				};
+				Some(self.make_token(token_type))
+			},
+			'=' => {
+				let token_type = if self.matches('=') {
+					TokenType::EqualEqual
+				} else {
+					TokenType::Equal
+				};
+				Some(self.make_token(token_type))
+			},
+			'<' => {
+				let token_type = if self.matches('=') {
+					TokenType::LessEqual
+				} else {
+					TokenType::Less
+				};
+				Some(self.make_token(token_type))
+			},
+			'>' => {
+				let token_type = if self.matches('=') {
+					TokenType::GreaterEqual
+				} else {
+					TokenType::Greater
+				};
+				Some(self.make_token(token_type))
+			},
+			_ => None,
+		};
+
+		tok
 	}
 
 	fn make_token(&self, token_type: TokenType) -> Token {
 		let len = self.pos - self.start;
 		Token::new(token_type, self.line, self.start, len)
 	}
+
+	/// emits a syntax error token
+	fn error(&self, msg: &str) -> Token {
+		Token::new(TokenType::Error(String::from(msg)), self.line, self.start, msg.len())
+	}
+
+	fn peek(&self) -> char {
+        self.source[self.pos..].chars().next().unwrap()
+    }
+
+	/// advances the scanner's position and returns the consumed character
+	fn advance(&mut self) -> char {
+		let c = self.peek();
+		self.pos += 1;
+		c
+	}
+
+	/// returns true if next character matches the expected character, consuming it
+	fn matches(&mut self, expected: char) -> bool {
+		if self.eof() {
+			false
+		} else if self.peek() != expected {
+			false
+		} else {
+			self.pos += 1;
+			true
+		}
+	}
+
 	fn skip_whitespace(&mut self) {
 		loop {
 			match self.peek() {
@@ -58,6 +141,9 @@ impl Scanner {
 		}
 	}
 
+	fn eof(&self) -> bool {
+		self.pos >= self.source.len()
+	}
 }
 
 #[cfg(test)]
