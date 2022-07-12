@@ -1,3 +1,8 @@
+mod scanner;
+mod token;
+
+use scanner::Scanner;
+
 use std::{
     env, fs,
     io::{stdin, stdout, Write},
@@ -14,6 +19,9 @@ fn repl() {
         if line == "exit\n" {
             break;
         }
+
+        let mut s = Scanner::new(line);
+        let _ = s.scan_all();
 
         // @TODO
         // let res = interpret(&line);

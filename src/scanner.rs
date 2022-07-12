@@ -14,7 +14,7 @@ fn is_alpha(c: char) -> bool {
     }
 }
 
-struct Scanner {
+pub struct Scanner {
     source: String,
     start: usize, // index of beginning of lexeme being scanned
     pos: usize,   // current character being looked at
@@ -22,7 +22,7 @@ struct Scanner {
 }
 
 impl Scanner {
-    fn new(source: String) -> Scanner {
+    pub fn new(source: String) -> Scanner {
         Scanner {
             source,
             start: 0,
@@ -31,7 +31,7 @@ impl Scanner {
         }
     }
 
-    fn scan_all(&mut self) -> Vec<Token> {
+    pub fn scan_all(&mut self) -> Vec<Token> {
         let mut tokens = Vec::new();
         while let Some(tok) = self.next() {
             tokens.push(tok);
