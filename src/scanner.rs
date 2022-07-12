@@ -7,6 +7,13 @@ fn is_digit(c: char) -> bool {
     }
 }
 
+fn is_alpha(c: char) -> bool {
+    match c {
+        'a'..='z' | 'A'..='Z' | '_' => true,
+        _ => false,
+    }
+}
+
 struct Scanner {
     source: String,
     start: usize, // index of beginning of lexeme being scanned
@@ -88,6 +95,7 @@ impl Scanner {
             }
             '\'' => Some(self.string()),
             '0'..='9' => Some(self.number()),
+            'a'..='z' | 'A'..='Z' | '_' => Some(self.identifier()),
             _ => None,
         };
 
@@ -175,6 +183,15 @@ impl Scanner {
         self.make_token(TokenType::Number(num))
     }
 
+    fn identifier(&mut self) -> Token {
+        while is_alpha(self.peek()) || is_digit(self.peek()) {
+            self.advance();
+        }
+
+        let tok = self.identifier_type();
+        self.make_token(tok)
+    }
+
     fn skip_whitespace(&mut self) {
         loop {
             match self.peek() {
@@ -207,6 +224,73 @@ impl Scanner {
         }
     }
 
+    fn identifier_type(&mut self) -> TokenType {
+        let c = self.source[self.start..].chars().next().unwrap();
+        let t = match c {
+            'a' => self.check_keyword(1, 2, "nd", TokenType::And),
+            'c' => self.check_keyword(1, 4, "lass", TokenType::Class),
+            'e' => self.check_keyword(1, 3, "lse", TokenType::Else),
+            'i' => self.check_keyword(1, 1, "f", TokenType::If),
+            'f' => {
+                if self.pos - self.start > 1 {
+                    match self.peek_next() {
+                        'a' => self.check_keyword(2, 3, "lse", TokenType::False),
+                        'o' => self.check_keyword(2, 1, "r", TokenType::For),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            }
+            'n' => self.check_keyword(1, 2, "il", TokenType::Nil),
+            'o' => self.check_keyword(1, 1, "r", TokenType::Or),
+            'p' => self.check_keyword(1, 4, "puts", TokenType::Puts),
+            'r' => self.check_keyword(1, 5, "eturn", TokenType::Return),
+            's' => self.check_keyword(1, 4, "uper", TokenType::Super),
+            't' => {
+                if self.pos - self.start > 1 {
+                    match self.peek_next() {
+                        'h' => self.check_keyword(2, 2, "is", TokenType::This),
+                        'r' => self.check_keyword(2, 2, "ue", TokenType::True),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            }
+            'v' => self.check_keyword(1, 2, "ar", TokenType::Var),
+            'w' => self.check_keyword(1, 4, "hile", TokenType::While),
+            _ => None,
+        };
+
+        if let Some(token_type) = t {
+            token_type
+        } else {
+            let ident = &self.source[self.start..self.pos];
+            if ident == "fn" {
+                TokenType::Fn
+            } else {
+                TokenType::Identifier(String::from(ident))
+            }
+        }
+    }
+
+    fn check_keyword(
+        &self,
+        start: usize,
+        len: usize,
+        rest: &str,
+        token_type: TokenType,
+    ) -> Option<TokenType> {
+        if (self.pos - self.start == start + len)
+            && &self.source[self.start + start..=self.start + len] == rest
+        {
+            Some(token_type)
+        } else {
+            None
+        }
+    }
+
     fn eof(&self) -> bool {
         self.pos >= self.source.len()
     }
@@ -231,13 +315,29 @@ mod tests {
     }
 
     #[test]
+    fn scans_keyword_fn() {
+        let mut scanner = Scanner::new(String::from("fn f fna"));
+        let tokens = scanner.scan_all();
+        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens[0], Token::new(TokenType::Fn, 1, 0, 2));
+        assert_eq!(
+            tokens[1],
+            Token::new(TokenType::Identifier(String::from("f")), 1, 3, 1)
+        );
+        assert_eq!(
+            tokens[2],
+            Token::new(TokenType::Identifier(String::from("fna")), 1, 5, 3)
+        );
+    }
+
+    #[test]
     fn scans_list_of_keywords() {
         let mut scanner = Scanner::new(String::from("nil if fn"));
         let tokens = scanner.scan_all();
         assert_eq!(tokens.len(), 3);
         assert_eq!(tokens[0], Token::new(TokenType::Nil, 1, 0, 3));
-        assert_eq!(tokens[1], Token::new(TokenType::If, 1, 5, 2));
-        assert_eq!(tokens[2], Token::new(TokenType::Fn, 1, 8, 2));
+        assert_eq!(tokens[1], Token::new(TokenType::If, 1, 4, 2));
+        assert_eq!(tokens[2], Token::new(TokenType::Fn, 1, 7, 2));
     }
 
     #[test]
