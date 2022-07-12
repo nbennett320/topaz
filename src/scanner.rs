@@ -145,6 +145,7 @@ impl Scanner {
     }
 
     fn string(&mut self) -> Token {
+        self.advance();
         while self.peek() != '\'' && !self.eof() {
             if self.peek() == '\n' {
                 self.line += 1;
@@ -159,7 +160,7 @@ impl Scanner {
             // consume closing '
             self.advance();
 
-            let string = &self.source[self.start..self.pos];
+            let string = &self.source[self.start + 1..self.pos - 1];
             self.make_token(TokenType::String(String::from(string)))
         }
     }
@@ -355,7 +356,7 @@ mod tests {
         assert_eq!(tokens.len(), 1);
         assert_eq!(
             tokens[0],
-            Token::new(TokenType::String(String::from("hello world")), 1, 1, 13)
+            Token::new(TokenType::String(String::from("hello world")), 1, 0, 13)
         );
     }
 
@@ -364,6 +365,6 @@ mod tests {
         let mut scanner = Scanner::new(String::from("12.34"));
         let tokens = scanner.scan_all();
         assert_eq!(tokens.len(), 1);
-        assert_eq!(tokens[0], Token::new(TokenType::Number(12.34), 1, 1, 5));
+        assert_eq!(tokens[0], Token::new(TokenType::Number(12.34), 1, 0, 5));
     }
 }
