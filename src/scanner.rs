@@ -110,7 +110,11 @@ impl Scanner {
     }
 
     fn peek(&self) -> char {
-        self.source[self.pos..].chars().next().unwrap()
+        if self.eof() {
+            '\0'
+        } else {
+            self.source[self.pos..].chars().next().unwrap()
+        }
     }
 
     /// advances the scanner's position and returns the consumed character
