@@ -1,3 +1,4 @@
+mod opcode;
 mod scanner;
 mod token;
 mod value;
