@@ -48,6 +48,10 @@ impl Chunk {
             Opcode::Return => self.simple_instruction("Return", offset),
             Opcode::Constant => self.constant_instruction("Constant", offset),
             Opcode::Negate => self.simple_instruction("Negate", offset),
+            Opcode::Add => self.simple_instruction("Add", offset),
+            Opcode::Subtract => self.simple_instruction("Subtract", offset),
+            Opcode::Multiply => self.simple_instruction("Multiply", offset),
+            Opcode::Divide => self.simple_instruction("Divide", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

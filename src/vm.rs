@@ -53,6 +53,10 @@ impl Vm {
                     };
                     self.push(negated_value)
                 }
+                Opcode::Add => self.binary_op('+'),
+                Opcode::Subtract => self.binary_op('-'),
+                Opcode::Multiply => self.binary_op('*'),
+                Opcode::Divide => self.binary_op('/'),
                 _ => return Err(InterpretError::CompileError),
             };
         }
@@ -77,5 +81,31 @@ impl Vm {
 
     fn pop(&mut self) -> Value {
         self.stack.pop().unwrap()
+    }
+
+    fn binary_op(&mut self, op: char) {
+        let val2 = self.pop();
+        let val1 = self.pop();
+
+        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1, val2) {
+            (a, b)
+        } else {
+            println!("binary_op: val1 or val2 aren't numbers");
+            self.push(val1);
+            return;
+        };
+
+        let result = match op {
+            '+' => a + b,
+            '-' => a - b,
+            '*' => a * b,
+            '/' => a / b,
+            _ => {
+                println!("binary_op: invalid op {}", op);
+                0.0
+            }
+        };
+
+        self.push(Value::Number(result))
     }
 }
