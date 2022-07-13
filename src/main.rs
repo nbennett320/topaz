@@ -1,5 +1,6 @@
 mod chunk;
 mod opcode;
+mod parser;
 mod scanner;
 mod token;
 mod value;
