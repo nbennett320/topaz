@@ -3,6 +3,8 @@ mod opcode;
 mod scanner;
 mod token;
 mod value;
+mod vm;
+
 use chunk::Chunk;
 use opcode::Opcode;
 use value::Value;
