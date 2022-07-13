@@ -1,5 +1,6 @@
 mod scanner;
 mod token;
+mod value;
 
 use scanner::Scanner;
 
