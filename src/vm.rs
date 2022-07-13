@@ -30,8 +30,9 @@ impl Vm {
                 print!("[ ");
                 for value in &mut self.stack {
                     print(&value);
+                    print!(" ");
                 }
-                print!(" ]");
+                print!("]");
                 print!("\n");
             }
 
