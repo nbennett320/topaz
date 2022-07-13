@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     // 1 character tokens
     LeftParen,
@@ -50,12 +50,12 @@ pub enum TokenType {
     Error(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Token {
-    token_type: TokenType,
-    line: usize,
-    col: usize,
-    len: usize,
+    pub token_type: TokenType,
+    pub line: usize,
+    pub col: usize,
+    pub len: usize,
 }
 
 impl Token {

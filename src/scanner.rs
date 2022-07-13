@@ -39,7 +39,7 @@ impl Scanner {
         tokens
     }
 
-    fn next(&mut self) -> Option<Token> {
+    pub fn next(&mut self) -> Option<Token> {
         // ignores whitespace between tokens
         self.skip_whitespace();
 
