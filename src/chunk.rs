@@ -47,6 +47,7 @@ impl Chunk {
         match from_u8(instruction) {
             Opcode::Return => self.simple_instruction("Return", offset),
             Opcode::Constant => self.constant_instruction("Constant", offset),
+            Opcode::Negate => self.simple_instruction("Negate", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

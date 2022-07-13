@@ -8,6 +8,7 @@ mod vm;
 use chunk::Chunk;
 use opcode::Opcode;
 use value::Value;
+use vm::Vm;
 
 use scanner::Scanner;
 
@@ -50,9 +51,13 @@ fn main() {
     let constant = chunk.add_constant(Value::Number(1.2));
     chunk.write(Opcode::Constant as u8, 123);
     chunk.write(constant as u8, 123);
+    chunk.write(Opcode::Negate as u8, 123);
     chunk.write(Opcode::Return as u8, 123);
 
     chunk.disassemble("test chunk");
+
+    let mut vm = Vm::new(chunk);
+    let _ = vm.run();
 
     let args: Vec<String> = env::args().collect();
     match args.len() {

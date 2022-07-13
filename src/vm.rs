@@ -24,13 +24,14 @@ impl Vm {
 
     pub fn run(&mut self) -> Result<(), InterpretError> {
         loop {
+            // debug information
             if cfg!(debug_assertions) {
-                print!("          ");
+                print!("stack:          ");
+                print!("[ ");
                 for value in &mut self.stack {
-                    print!("[ ");
                     print(&value);
-                    print!(" ]");
                 }
+                print!(" ]");
                 print!("\n");
             }
 
@@ -39,11 +40,18 @@ impl Vm {
                 Opcode::Return => {
                     print(&self.pop());
                     print!("\n");
+                    break;
                 }
                 Opcode::Constant => {
                     let constant = self.read_constant();
                     self.push(constant);
-                    break;
+                }
+                Opcode::Negate => {
+                    let value = self.pop();
+                    let negated_value = match value {
+                        Value::Number(num) => Value::Number(-num),
+                    };
+                    self.push(negated_value)
                 }
                 _ => return Err(InterpretError::CompileError),
             };
