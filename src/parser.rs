@@ -39,9 +39,8 @@ impl Parser {
     pub fn advance(&mut self) {
         self.previous = self.current.clone();
 
-        while let Some(tok) = self.scanner.next() {
+        if let Some(tok) = self.scanner.next() {
             self.current = tok;
-            break;
         }
     }
 

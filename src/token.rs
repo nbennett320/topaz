@@ -46,7 +46,7 @@ pub enum TokenType {
     If,
     Nil,
     Or,
-    Puts,
+    Print,
     Return,
     Super,
     This,
@@ -255,7 +255,7 @@ impl TokenType {
                 infix: None,
                 precedence: Precedence::None,
             },
-            TokenType::Puts => &ParseRule {
+            TokenType::Print => &ParseRule {
                 prefix: None,
                 infix: None,
                 precedence: Precedence::None,

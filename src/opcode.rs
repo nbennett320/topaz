@@ -17,6 +17,7 @@ pub enum Opcode {
     LogicalOr,
     BitwiseAnd,
     BitwiseOr,
+    Print,
 
     Unknown,
 }
@@ -41,6 +42,7 @@ pub fn from_u8(x: u8) -> Opcode {
         15 => Opcode::LogicalOr,
         16 => Opcode::BitwiseAnd,
         17 => Opcode::BitwiseOr,
+        18 => Opcode::Print,
         _ => Opcode::Unknown,
     }
 }
