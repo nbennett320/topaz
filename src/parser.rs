@@ -27,13 +27,40 @@ impl Parser {
 
     pub fn compile(mut self) -> Result<Chunk, InterpretError> {
         self.advance();
-        self.expression();
+        self.declaration();
         self.emit_op(Opcode::Return);
         Ok(self.chunk)
     }
 
     fn expression(&mut self) {
         self.parse_precedence(Precedence::Assignment);
+    }
+
+    fn declaration(&mut self) {
+        if let TokenType::Identifier(name) = self.current.token_type.clone() {
+            self.advance();
+            if self.matches(TokenType::Equal) {
+                self.variable_declaration(name);
+                return;
+            }
+        }
+
+        self.statement();
+    }
+
+    fn statement(&mut self) {
+        match self.current.token_type.clone() {
+            TokenType::Print => {
+                self.advance();
+                self.print_statement();
+            }
+            _ => self.expression_statement(),
+        }
+    }
+
+    fn expression_statement(&mut self) {
+        self.expression();
+        self.emit_op(Opcode::Pop);
     }
 
     pub fn advance(&mut self) {
@@ -179,5 +206,39 @@ impl Parser {
             TokenType::True => self.emit_op(Opcode::True),
             _ => unreachable!("Impossible TokenType in literal"),
         }
+    }
+
+    fn print_statement(&mut self) {
+        self.expression();
+        self.emit_op(Opcode::Print);
+        println!();
+    }
+
+    fn matches(&mut self, token_type: TokenType) -> bool {
+        if self.current.token_type == token_type {
+            self.advance();
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn variable(&mut self) {
+        if let TokenType::Identifier(name) = self.previous.token_type.clone() {
+            let var = self.make_constant(Value::String(name));
+            self.emit_op(Opcode::GetGlobal);
+            self.emit_byte(var as u8);
+        }
+    }
+
+    fn variable_declaration(&mut self, name: String) {
+        self.expression();
+        let global = self.make_constant(Value::String(name));
+        self.define_global(global);
+    }
+
+    fn define_global(&mut self, global: usize) {
+        self.emit_op(Opcode::DefineGlobal);
+        self.emit_byte(global as u8);
     }
 }

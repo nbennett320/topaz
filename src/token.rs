@@ -196,7 +196,7 @@ impl TokenType {
                 precedence: Precedence::Comparison,
             },
             TokenType::Identifier(_) => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::variable),
                 infix: None,
                 precedence: Precedence::None,
             },

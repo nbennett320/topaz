@@ -64,6 +64,9 @@ impl Chunk {
             Opcode::BitwiseAnd => self.simple_instruction("LogicalAnd", offset),
             Opcode::BitwiseOr => self.simple_instruction("LogicalOr", offset),
             Opcode::Print => self.simple_instruction("Print", offset),
+            Opcode::Pop => self.simple_instruction("Pop", offset),
+            Opcode::DefineGlobal => self.constant_instruction("DefineGlobal", offset),
+            Opcode::GetGlobal => self.constant_instruction("GetGlobal", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

@@ -18,6 +18,9 @@ pub enum Opcode {
     BitwiseAnd,
     BitwiseOr,
     Print,
+    Pop,
+    DefineGlobal,
+    GetGlobal,
 
     Unknown,
 }
@@ -43,6 +46,9 @@ pub fn from_u8(x: u8) -> Opcode {
         16 => Opcode::BitwiseAnd,
         17 => Opcode::BitwiseOr,
         18 => Opcode::Print,
+        19 => Opcode::Pop,
+        20 => Opcode::DefineGlobal,
+        21 => Opcode::GetGlobal,
         _ => Opcode::Unknown,
     }
 }
