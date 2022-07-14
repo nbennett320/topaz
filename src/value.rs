@@ -1,6 +1,4 @@
-use std::fmt::{self, Display, Formatter};
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Clone)]
 pub enum Value {
     Bool(bool),
     Nil,
@@ -37,22 +35,6 @@ impl Value {
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Nil, _) => true,
             _ => unreachable!("Unrecognized value equality comparison"),
-        }
-    }
-}
-
-impl From<i64> for Value {
-    fn from(n: i64) -> Self {
-        Value::Number(n as f64)
-    }
-}
-
-impl Display for Value {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Value::Bool(x) => write!(f, "{}", x),
-            Value::Number(x) => write!(f, "{}", x),
-            Value::Nil => write!(f, "nil"),
         }
     }
 }
