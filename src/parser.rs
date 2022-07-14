@@ -53,7 +53,7 @@ struct ParseRule {
     precedence: Precedence,
 }
 
-const rules: [ParseRule; 40] = [
+const RULES: [ParseRule; 40] = [
     ParseRule {
         prefix: Some(Parser::grouping),
         infix: None,
@@ -257,7 +257,7 @@ const rules: [ParseRule; 40] = [
 ];
 
 fn get_rule(token_type: TokenType) -> &'static ParseRule {
-    &rules[to_usize(token_type)]
+    &RULES[to_usize(token_type)]
 }
 
 impl Parser {
