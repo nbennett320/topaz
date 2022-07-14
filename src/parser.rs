@@ -12,6 +12,7 @@ pub struct Parser {
     scanner: Scanner,
     chunk: Chunk,
     had_error: bool,
+    end_flag: bool,
 }
 
 impl Parser {
@@ -22,12 +23,17 @@ impl Parser {
             scanner: Scanner::new(source),
             chunk: Chunk::new(),
             had_error: false,
+            end_flag: false,
         }
     }
 
     pub fn compile(mut self) -> Result<Chunk, InterpretError> {
         self.advance();
-        self.declaration();
+
+        while !self.end_flag {
+            self.declaration();
+        }
+
         self.emit_op(Opcode::Return);
         Ok(self.chunk)
     }
@@ -68,6 +74,8 @@ impl Parser {
 
         if let Some(tok) = self.scanner.next() {
             self.current = tok;
+        } else {
+            self.end_flag = true;
         }
     }
 
