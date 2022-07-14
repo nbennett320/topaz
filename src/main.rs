@@ -1,5 +1,6 @@
 mod chunk;
 mod opcode;
+mod parse_rule;
 mod parser;
 mod precedence;
 mod scanner;

@@ -14,12 +14,6 @@ pub struct Parser {
     had_error: bool,
 }
 
-struct ParseRule {
-    prefix: Option<fn(parser: &mut Parser)>,
-    infix: Option<fn(parser: &mut Parser)>,
-    precedence: Precedence,
-}
-
 const RULES: [ParseRule; 40] = [
     ParseRule {
         prefix: Some(Parser::grouping),
