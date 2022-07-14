@@ -59,6 +59,10 @@ impl Chunk {
             Opcode::Equal => self.simple_instruction("Equal", offset),
             Opcode::Greater => self.simple_instruction("Greater", offset),
             Opcode::Less => self.simple_instruction("Less", offset),
+            Opcode::LogicalAnd => self.simple_instruction("LogicalAnd", offset),
+            Opcode::LogicalOr => self.simple_instruction("LogicalOr", offset),
+            Opcode::BitwiseAnd => self.simple_instruction("LogicalAnd", offset),
+            Opcode::BitwiseOr => self.simple_instruction("LogicalOr", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

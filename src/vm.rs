@@ -82,6 +82,10 @@ impl Vm {
                 }
                 Opcode::Greater => self.binary_op('>'),
                 Opcode::Less => self.binary_op('<'),
+                Opcode::LogicalAnd => self.binary_op('A'),
+                Opcode::LogicalOr => self.binary_op('O'),
+                Opcode::BitwiseAnd => self.binary_op('&'),
+                Opcode::BitwiseOr => self.binary_op('|'),
                 _ => return Err(InterpretError::CompileError),
             };
         }
@@ -138,6 +142,28 @@ impl Vm {
             '/' => Value::Number(a / b),
             '>' => Value::Bool(a > b),
             '<' => Value::Bool(a < b),
+            '&' => {
+                let a_diff = (a - a.round()).abs();
+                let b_diff = (b - b.round()).abs();
+                
+                if a_diff > 0f64 || b_diff > 0f64 {
+                    self.runtime_error("Cannot use fp operands for & operator");
+                }
+
+                Value::Number((a.round() as i64 & b.round() as i64) as f64)
+            },
+            '|' => {
+                let a_diff = (a - a.round()).abs();
+                let b_diff = (b - b.round()).abs();
+                
+                if a_diff > 0f64 || b_diff > 0f64 {
+                    self.runtime_error("Cannot use fp operands for | operator");
+                }
+
+                Value::Number((a.round() as i64 | b.round() as i64) as f64)
+            },
+            // 'A' => Value::Bool(a as bool && b),
+            // 'O' => Value::Bool(a || b),
             _ => unreachable!("binary_op: invalid op {}", op),
         };
 

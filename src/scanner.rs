@@ -57,6 +57,14 @@ impl Scanner {
             '+' => Some(self.make_token(TokenType::Plus)),
             '/' => Some(self.make_token(TokenType::Slash)),
             '*' => Some(self.make_token(TokenType::Star)),
+            '&' => match self.peek_next() {
+                '&' => Some(self.make_token(TokenType::LogicalAnd)),
+                _ => Some(self.make_token(TokenType::BitwiseAnd)),
+            },
+            '|' => match self.peek_next() {
+                '|' => Some(self.make_token(TokenType::LogicalOr)),
+                _ => Some(self.make_token(TokenType::BitwiseOr)),
+            },
             '!' => {
                 let token_type = if self.matches('=') {
                     TokenType::BangEqual
