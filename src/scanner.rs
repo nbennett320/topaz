@@ -49,7 +49,7 @@ impl Scanner {
             return None;
         }
 
-        let tok = match self.peek() {
+        let tok = match self.advance() {
             '(' => Some(self.make_token(TokenType::LeftParen)),
             ')' => Some(self.make_token(TokenType::RightParen)),
             '{' => Some(self.make_token(TokenType::LeftBrace)),
