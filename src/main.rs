@@ -33,8 +33,8 @@ fn repl() {
         let res = Parser::new(line).compile();
         match res {
             Ok(chunk) => {
-                Vm::new(chunk).run();
-                ()
+                chunk.disassemble("test chunk");
+                let _ = Vm::new(chunk).run();
             }
             Err(_) => println!("Compile error"),
         }

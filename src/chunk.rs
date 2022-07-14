@@ -79,7 +79,7 @@ impl Chunk {
         let constant = self.code[offset + 1] as usize;
         print!("{} {} ", name, constant);
         self.constants[constant].print();
-        print!("\n");
-        return offset + 2;
+        println!();
+        offset + 2
     }
 }

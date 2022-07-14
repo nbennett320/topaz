@@ -33,14 +33,14 @@ impl Vm {
                     print!(" ");
                 }
                 print!("]");
-                print!("\n");
+                println!();
             }
 
             let instruction = self.read_byte();
             match from_u8(instruction) {
                 Opcode::Return => {
                     self.pop().print();
-                    print!("\n");
+                    println!();
                     break;
                 }
                 Opcode::Constant => {
@@ -55,7 +55,16 @@ impl Vm {
                     };
                     self.push(negated_value)
                 }
-                Opcode::Add => self.binary_op('+'),
+                Opcode::Add => {
+                    if let (Value::String(mut a), Value::String(b)) =
+                        (self.peek(0).clone(), self.peek(1))
+                    {
+                        a.push_str(b);
+                        self.push(Value::String(a))
+                    } else {
+                        self.binary_op('+')
+                    }
+                }
                 Opcode::Subtract => self.binary_op('-'),
                 Opcode::Multiply => self.binary_op('*'),
                 Opcode::Divide => self.binary_op('/'),
@@ -98,7 +107,7 @@ impl Vm {
 
     fn read_constant(&mut self) -> Value {
         let byte = self.read_byte();
-        self.chunk.constants[byte as usize]
+        self.chunk.constants[byte as usize].clone()
     }
 
     fn push(&mut self, value: Value) {
@@ -109,11 +118,16 @@ impl Vm {
         self.stack.pop().unwrap()
     }
 
+    fn peek(&self, offset: usize) -> &Value {
+        let len = self.stack.len();
+        &self.stack[len - 1 - offset]
+    }
+
     fn binary_op(&mut self, op: char) {
         let val2 = self.pop();
         let val1 = self.pop();
 
-        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1, val2) {
+        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1.clone(), val2) {
             (a, b)
         } else {
             self.runtime_error("Operands must be numbers");

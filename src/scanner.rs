@@ -1,17 +1,11 @@
 use crate::token::{Token, TokenType};
 
 fn is_digit(c: char) -> bool {
-    match c {
-        '0'..='9' => true,
-        _ => false,
-    }
+    matches!(c, '0'..='9')
 }
 
 fn is_alpha(c: char) -> bool {
-    match c {
-        'a'..='z' | 'A'..='Z' | '_' => true,
-        _ => false,
-    }
+    matches!(c,'a'..='z' | 'A'..='Z' | '_')
 }
 
 pub struct Scanner {
@@ -31,7 +25,9 @@ impl Scanner {
         }
     }
 
-    pub fn scan_all(&mut self) -> Vec<Token> {
+    // used only in tests
+    #[cfg(test)]
+    fn scan_all(&mut self) -> Vec<Token> {
         let mut tokens = Vec::new();
         while let Some(tok) = self.next() {
             tokens.push(tok);
@@ -49,7 +45,7 @@ impl Scanner {
             return None;
         }
 
-        let tok = match self.advance() {
+        match self.advance() {
             '(' => Some(self.make_token(TokenType::LeftParen)),
             ')' => Some(self.make_token(TokenType::RightParen)),
             '{' => Some(self.make_token(TokenType::LeftBrace)),
@@ -105,9 +101,7 @@ impl Scanner {
             '0'..='9' => Some(self.number()),
             'a'..='z' | 'A'..='Z' | '_' => Some(self.identifier()),
             _ => None,
-        };
-
-        tok
+        }
     }
 
     fn make_token(&self, token_type: TokenType) -> Token {
@@ -142,9 +136,7 @@ impl Scanner {
 
     /// returns true if next character matches the expected character, consuming it
     fn matches(&mut self, expected: char) -> bool {
-        if self.eof() {
-            false
-        } else if self.peek() != expected {
+        if self.eof() || self.peek() != expected {
             false
         } else {
             self.pos += 1;
@@ -206,18 +198,15 @@ impl Scanner {
             match self.peek() {
                 ' ' | '\r' | '\t' => {
                     self.advance();
-                    ()
                 }
                 '\n' => {
                     self.line += 1;
                     self.advance();
-                    ()
                 }
                 '#' => {
                     while self.peek() != '\n' && !self.eof() {
                         self.advance();
                     }
-                    ()
                 }
                 _ => break,
             }
