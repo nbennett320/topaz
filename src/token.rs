@@ -16,6 +16,8 @@ pub enum TokenType {
     Semicolon,
     Slash,
     Star,
+    BitwiseAnd,
+    BitwiseOr,
 
     // 1 or 2 character tokens
     Bang,
@@ -26,6 +28,8 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    LogicalAnd,
+    LogicalOr,
 
     // Literals
     Identifier(String),
@@ -130,6 +134,26 @@ impl TokenType {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Factor,
+            },
+            TokenType::BitwiseAnd => &ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Term,
+            },
+            TokenType::BitwiseOr => &ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Term,
+            },
+            TokenType::LogicalAnd => &ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Term,
+            },
+            TokenType::LogicalOr => &ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Term,
             },
             TokenType::Bang => &ParseRule {
                 prefix: Some(Parser::unary),

@@ -13,6 +13,10 @@ pub enum Opcode {
     Equal,
     Greater,
     Less,
+    LogicalAnd,
+    LogicalOr,
+    BitwiseAnd,
+    BitwiseOr,
 
     Unknown,
 }
@@ -33,6 +37,10 @@ pub fn from_u8(x: u8) -> Opcode {
         11 => Opcode::Equal,
         12 => Opcode::Greater,
         13 => Opcode::Less,
+        14 => Opcode::LogicalAnd,
+        15 => Opcode::LogicalOr,
+        16 => Opcode::BitwiseAnd,
+        17 => Opcode::BitwiseOr,
         _ => Opcode::Unknown,
     }
 }
