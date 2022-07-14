@@ -1,5 +1,5 @@
 use crate::opcode::Opcode;
-use crate::token::{to_usize, Token, TokenType};
+use crate::token::{Token, TokenType};
 use crate::value::Value;
 use crate::vm::InterpretError;
 use crate::Chunk;
@@ -257,7 +257,7 @@ const RULES: [ParseRule; 40] = [
 ];
 
 fn get_rule(token_type: TokenType) -> &'static ParseRule {
-    &RULES[to_usize(token_type)]
+    &RULES[token_type.to_usize()]
 }
 
 impl Parser {
