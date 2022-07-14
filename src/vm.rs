@@ -66,6 +66,13 @@ impl Vm {
                     let value = self.pop().is_falsey();
                     self.push(Value::Bool(value))
                 }
+                Opcode::Equal => {
+                    let b = self.pop();
+                    let a = self.pop();
+                    self.push(Value::Bool(a.eq(&b)));
+                }
+                Opcode::Greater => self.binary_op('>'),
+                Opcode::Less => self.binary_op('<'),
                 _ => return Err(InterpretError::CompileError),
             };
         }
@@ -111,16 +118,15 @@ impl Vm {
         };
 
         let result = match op {
-            '+' => a + b,
-            '-' => a - b,
-            '*' => a * b,
-            '/' => a / b,
-            _ => {
-                println!("binary_op: invalid op {}", op);
-                0.0
-            }
+            '+' => Value::Number(a + b),
+            '-' => Value::Number(a - b),
+            '*' => Value::Number(a * b),
+            '/' => Value::Number(a / b),
+            '>' => Value::Bool(a > b),
+            '<' => Value::Bool(a < b),
+            _ => unreachable!("binary_op: invalid op {}", op),
         };
 
-        self.push(Value::Number(result))
+        self.push(result)
     }
 }

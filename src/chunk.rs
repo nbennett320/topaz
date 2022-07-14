@@ -56,6 +56,9 @@ impl Chunk {
             Opcode::True => self.simple_instruction("True", offset),
             Opcode::False => self.simple_instruction("False", offset),
             Opcode::Not => self.simple_instruction("Not", offset),
+            Opcode::Equal => self.simple_instruction("Equal", offset),
+            Opcode::Greater => self.simple_instruction("Greater", offset),
+            Opcode::Less => self.simple_instruction("Less", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

@@ -138,8 +138,8 @@ impl TokenType {
             },
             TokenType::BangEqual => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Equality,
             },
             TokenType::Equal => &ParseRule {
                 prefix: None,
@@ -148,28 +148,28 @@ impl TokenType {
             },
             TokenType::EqualEqual => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
             },
             TokenType::Greater => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
             },
             TokenType::GreaterEqual => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
             },
             TokenType::Less => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
             },
             TokenType::LessEqual => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Comparison,
             },
             TokenType::Identifier(_) => &ParseRule {
                 prefix: None,

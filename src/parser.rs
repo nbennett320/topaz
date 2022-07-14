@@ -86,6 +86,11 @@ impl Parser {
         self.emit_byte(op as u8);
     }
 
+    fn emit_ops(&mut self, op1: Opcode, op2: Opcode) {
+        self.emit_byte(op1 as u8);
+        self.emit_byte(op2 as u8);
+    }
+
     fn emit_constant(&mut self, value: Value) {
         let constant = self.make_constant(value) as u8;
         self.emit_bytes(Opcode::Constant as u8, constant);
@@ -128,6 +133,12 @@ impl Parser {
             TokenType::Minus => self.emit_op(Opcode::Subtract),
             TokenType::Star => self.emit_op(Opcode::Multiply),
             TokenType::Slash => self.emit_op(Opcode::Divide),
+            TokenType::BangEqual => self.emit_ops(Opcode::Equal, Opcode::Not),
+            TokenType::EqualEqual => self.emit_op(Opcode::Equal),
+            TokenType::Greater => self.emit_op(Opcode::Greater),
+            TokenType::GreaterEqual => self.emit_ops(Opcode::Less, Opcode::Not),
+            TokenType::Less => self.emit_op(Opcode::Less),
+            TokenType::LessEqual => self.emit_ops(Opcode::Greater, Opcode::Not),
             _ => (),
         }
     }
