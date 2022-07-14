@@ -7,10 +7,8 @@ mod value;
 mod vm;
 
 use chunk::Chunk;
-use opcode::Opcode;
 use parser::Parser;
 use scanner::Scanner;
-use value::Value;
 use vm::Vm;
 
 use std::{
@@ -51,29 +49,6 @@ fn run_file(fname: &str) {
 }
 
 fn main() {
-    let mut chunk = Chunk::new();
-    let mut constant = chunk.add_constant(Value::Number(1.2));
-    chunk.write(Opcode::Constant as u8, 123);
-    chunk.write(constant as u8, 123);
-
-    constant = chunk.add_constant(Value::Number(3.4));
-    chunk.write(Opcode::Constant as u8, 123);
-    chunk.write(constant as u8, 123);
-    chunk.write(Opcode::Add as u8, 123);
-
-    constant = chunk.add_constant(Value::Number(5.6));
-    chunk.write(Opcode::Constant as u8, 123);
-    chunk.write(constant as u8, 123);
-    chunk.write(Opcode::Divide as u8, 123);
-
-    chunk.write(Opcode::Negate as u8, 123);
-    chunk.write(Opcode::Return as u8, 123);
-
-    chunk.disassemble("test chunk");
-
-    let mut vm = Vm::new(chunk);
-    let _ = vm.run();
-
     let args: Vec<String> = env::args().collect();
     match args.len() {
         1 => repl(),
