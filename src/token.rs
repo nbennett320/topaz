@@ -132,7 +132,7 @@ impl TokenType {
                 precedence: Precedence::Factor,
             },
             TokenType::Bang => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::unary),
                 infix: None,
                 precedence: Precedence::None,
             },

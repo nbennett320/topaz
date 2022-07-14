@@ -9,6 +9,7 @@ pub enum Opcode {
     Nil,
     True,
     False,
+    Not,
 
     Unknown,
 }
@@ -25,6 +26,7 @@ pub fn from_u8(x: u8) -> Opcode {
         7 => Opcode::Nil,
         8 => Opcode::True,
         9 => Opcode::False,
+        10 => Opcode::Not,
         _ => Opcode::Unknown,
     }
 }

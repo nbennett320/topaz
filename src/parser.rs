@@ -112,7 +112,8 @@ impl Parser {
 
         match operator {
             TokenType::Minus => self.emit_op(Opcode::Negate),
-            _ => (),
+            TokenType::Bang => self.emit_op(Opcode::Not),
+            _ => unreachable!("Impossible unary operator"),
         }
     }
 

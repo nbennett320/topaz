@@ -62,6 +62,10 @@ impl Vm {
                 Opcode::Nil => self.push(Value::Nil),
                 Opcode::True => self.push(Value::Bool(true)),
                 Opcode::False => self.push(Value::Bool(false)),
+                Opcode::Not => {
+                    let value = self.pop().is_falsey();
+                    self.push(Value::Bool(value))
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }
