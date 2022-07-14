@@ -1,8 +1,9 @@
-#[derive(Copy, Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     Bool(bool),
     Nil,
     Number(f64),
+    String(String),
 }
 
 impl Value {
@@ -11,6 +12,7 @@ impl Value {
             Value::Bool(b) => print!("{}", b),
             Value::Nil => print!("nil"),
             Value::Number(num) => print!("{}", num),
+            Value::String(s) => print!("{}", s),
         }
     }
 
@@ -30,6 +32,7 @@ impl Value {
         match (self, other) {
             (Value::Bool(a), Value::Bool(b)) => a == b,
             (Value::Number(a), Value::Number(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
             (Value::Nil, _) => true,
             _ => unreachable!("Unrecognized value equality comparison"),
         }
@@ -86,5 +89,19 @@ mod tests {
         let a = Value::Number(0.0);
         let b = Value::Bool(false);
         assert_eq!(a.eq(&b), false);
+    }
+
+    #[test]
+    fn different_strings_are_not_equal() {
+        let a = Value::String(String::from("star wars"));
+        let b = Value::String(String::from("star trek"));
+        assert_eq!(a.eq(&b), false);
+    }
+
+    #[test]
+    fn equal_strings_are_equal() {
+        let a = Value::String(String::from("topaz is neat!"));
+        let b = Value::String(String::from("topaz is neat!"));
+        assert_eq!(a.eq(&b), true);
     }
 }

@@ -48,10 +48,16 @@ impl Parser {
     fn consume(&mut self, token_type: TokenType, msg: &str) {
         if !(self.current.token_type == token_type) {
             self.error_at_current(msg);
-            return;
         }
 
         self.advance();
+    }
+
+    pub fn string(&mut self) {
+        match &self.previous.token_type {
+            TokenType::String(s) => self.emit_constant(Value::String(s.to_string())),
+            _ => unreachable!("No string"),
+        }
     }
 
     fn error(&mut self, msg: &str) {

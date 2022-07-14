@@ -177,7 +177,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::String(_) => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::string),
                 infix: None,
                 precedence: Precedence::None,
             },
