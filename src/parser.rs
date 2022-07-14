@@ -1,5 +1,5 @@
 use crate::opcode::Opcode;
-use crate::token::{Token, TokenType};
+use crate::token::{to_usize, Token, TokenType};
 use crate::value::Value;
 use crate::vm::InterpretError;
 use crate::Chunk;
