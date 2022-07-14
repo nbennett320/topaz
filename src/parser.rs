@@ -280,7 +280,7 @@ impl Parser {
         self.had_error = true;
     }
 
-    fn number(&mut self) {
+    pub fn number(&mut self) {
         if let TokenType::Number(num) = self.previous.token_type {
             self.emit_constant(Value::Number(num));
         }
@@ -314,12 +314,12 @@ impl Parser {
         }
     }
 
-    fn grouping(&mut self) {
+    pub fn grouping(&mut self) {
         self.expression();
         self.consume(TokenType::RightParen, "Expect ')' after expression");
     }
 
-    fn unary(&mut self) {
+    pub fn unary(&mut self) {
         let operator = self.previous.token_type.clone();
         self.parse_precedence(Precedence::Unary);
 
@@ -329,9 +329,9 @@ impl Parser {
         }
     }
 
-    fn binary(&mut self) {
+    pub fn binary(&mut self) {
         let operator = self.previous.token_type.clone();
-        let rule = get_rule(operator.clone());
+        let rule = operator.rule();
         let precedence = Precedence::from(rule.precedence as usize + 1);
         self.parse_precedence(precedence);
 
