@@ -19,6 +19,7 @@ use std::{
 };
 
 fn repl() {
+    let mut vm = Vm::new();
     loop {
         print!("> ");
         stdout().flush().ok();
@@ -33,8 +34,8 @@ fn repl() {
         let res = Parser::new(line).compile();
         match res {
             Ok(chunk) => {
-                chunk.disassemble("test chunk");
-                let _ = Vm::new(chunk).run();
+                chunk.disassemble("repl chunk");
+                let _ = vm.run(chunk);
             }
             Err(_) => println!("Compile error"),
         }
