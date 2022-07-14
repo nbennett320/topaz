@@ -6,6 +6,9 @@ pub enum Opcode {
     Subtract,
     Multiply,
     Divide,
+    Nil,
+    True,
+    False,
 
     Unknown,
 }
@@ -19,6 +22,9 @@ pub fn from_u8(x: u8) -> Opcode {
         4 => Opcode::Subtract,
         5 => Opcode::Multiply,
         6 => Opcode::Divide,
+        7 => Opcode::Nil,
+        8 => Opcode::True,
+        9 => Opcode::False,
         _ => Opcode::Unknown,
     }
 }

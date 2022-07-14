@@ -51,6 +51,7 @@ impl Vm {
                     let value = self.pop();
                     let negated_value = match value {
                         Value::Number(num) => Value::Number(-num),
+                        _ => return Err(self.runtime_error("Operand must be a number")),
                     };
                     self.push(negated_value)
                 }
@@ -58,11 +59,20 @@ impl Vm {
                 Opcode::Subtract => self.binary_op('-'),
                 Opcode::Multiply => self.binary_op('*'),
                 Opcode::Divide => self.binary_op('/'),
+                Opcode::Nil => self.push(Value::Nil),
+                Opcode::True => self.push(Value::Bool(true)),
+                Opcode::False => self.push(Value::Bool(false)),
                 _ => return Err(InterpretError::CompileError),
             };
         }
 
         Ok(())
+    }
+
+    fn runtime_error(&mut self, msg: &str) -> InterpretError {
+        let line = self.chunk.lines[self.ip - 1];
+        println!("{} [line {}]", msg, line);
+        InterpretError::RuntimeError
     }
 
     fn read_byte(&mut self) -> u8 {
@@ -91,7 +101,7 @@ impl Vm {
         let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1, val2) {
             (a, b)
         } else {
-            println!("binary_op: val1 or val2 aren't numbers");
+            self.runtime_error("Operands must be numbers");
             self.push(val1);
             return;
         };

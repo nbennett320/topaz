@@ -151,4 +151,14 @@ impl Parser {
 
         self.error("Expected expression");
     }
+
+    pub fn literal(&mut self) {
+        let token_type = self.previous.token_type.clone();
+        match token_type {
+            TokenType::False => self.emit_op(Opcode::False),
+            TokenType::Nil => self.emit_op(Opcode::Nil),
+            TokenType::True => self.emit_op(Opcode::True),
+            _ => unreachable!("Impossible TokenType in literal"),
+        }
+    }
 }

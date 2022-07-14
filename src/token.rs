@@ -202,7 +202,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::False => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::literal),
                 infix: None,
                 precedence: Precedence::None,
             },
@@ -222,7 +222,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::Nil => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::literal),
                 infix: None,
                 precedence: Precedence::None,
             },
@@ -252,7 +252,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::True => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::literal),
                 infix: None,
                 precedence: Precedence::None,
             },
