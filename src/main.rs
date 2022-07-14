@@ -44,11 +44,19 @@ fn repl() {
 
 fn run_file(fname: &str) {
     println!("Running file {}", fname);
-    let _source =
+    let source =
         fs::read_to_string(fname).unwrap_or_else(|_| panic!("Unable to open file {}", fname));
 
-    // @TODO
-    // let res = interpret(&_source);
+    let mut vm = Vm::new();
+
+    let res = Parser::new(source).compile();
+    match res {
+        Ok(chunk) => {
+            chunk.disassemble(format!("script {} chunk", fname).as_str());
+            let _ = vm.run(chunk);
+        }
+        Err(_) => println!("Compile error"),
+    }
 }
 
 fn main() {
