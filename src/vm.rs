@@ -62,7 +62,7 @@ impl Vm {
                 }
                 Opcode::Add => {
                     if let (Value::String(mut a), Value::String(b)) =
-                        (self.peek(0).clone(), self.peek(1))
+                        (self.peek(1).clone(), self.peek(0))
                     {
                         a.push_str(b);
                         self.push(Value::String(a))
