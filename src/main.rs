@@ -78,6 +78,6 @@ fn main() {
     match args.len() {
         1 => repl(),
         2 => run_file(&args[1]),
-        _ => println!("Usage: emerald [path]"),
+        _ => println!("Usage: topaz [path]"),
     }
 }
