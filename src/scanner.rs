@@ -234,7 +234,7 @@ impl Scanner {
             'i' => self.check_keyword(1, 1, "f", TokenType::If),
             'f' => {
                 if self.pos - self.start > 1 {
-                    match self.peek_next() {
+                    match self.source.chars().nth(self.start + 1).unwrap() {
                         'a' => self.check_keyword(2, 3, "lse", TokenType::False),
                         'o' => self.check_keyword(2, 1, "r", TokenType::For),
                         _ => None,
@@ -250,7 +250,7 @@ impl Scanner {
             's' => self.check_keyword(1, 4, "uper", TokenType::Super),
             't' => {
                 if self.pos - self.start > 1 {
-                    match self.peek_next() {
+                    match self.source.chars().nth(self.start + 1).unwrap() {
                         'h' => self.check_keyword(2, 2, "is", TokenType::This),
                         'r' => self.check_keyword(2, 2, "ue", TokenType::True),
                         _ => None,
@@ -284,7 +284,7 @@ impl Scanner {
         token_type: TokenType,
     ) -> Option<TokenType> {
         if (self.pos - self.start == start + len)
-            && &self.source[self.start + start..=self.start + len] == rest
+            && &self.source[self.start + start..self.start + start + len] == rest
         {
             Some(token_type)
         } else {
@@ -313,6 +313,14 @@ mod tests {
         let tokens = scanner.scan_all();
         assert_eq!(tokens.len(), 1);
         assert_eq!(tokens[0], Token::new(TokenType::Return, 1, 0, 6));
+    }
+
+    #[test]
+    fn scans_keyword_false() {
+        let mut scanner = Scanner::new(String::from("false"));
+        let tokens = scanner.scan_all();
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0], Token::new(TokenType::False, 1, 0, 5));
     }
 
     #[test]
