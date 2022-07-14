@@ -1,6 +1,6 @@
 use crate::chunk::Chunk;
 use crate::opcode::{from_u8, Opcode};
-use crate::value::{print, Value};
+use crate::value::Value;
 
 pub struct Vm {
     ip: usize,
@@ -29,7 +29,7 @@ impl Vm {
                 print!("stack:          ");
                 print!("[ ");
                 for value in &mut self.stack {
-                    print(&value);
+                    value.print();
                     print!(" ");
                 }
                 print!("]");
@@ -39,7 +39,7 @@ impl Vm {
             let instruction = self.read_byte();
             match from_u8(instruction) {
                 Opcode::Return => {
-                    print(&self.pop());
+                    self.pop().print();
                     print!("\n");
                     break;
                 }

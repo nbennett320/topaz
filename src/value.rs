@@ -5,10 +5,12 @@ pub enum Value {
     Number(f64),
 }
 
-pub fn print(value: &Value) {
-    match value {
-        Value::Bool(b) => print!("{}", b),
-        Value::Nil => print!("nil"),
-        Value::Number(num) => print!("{}", num),
+impl Value {
+    pub fn print(&self) {
+        match self {
+            Value::Bool(b) => print!("{}", b),
+            Value::Nil => print!("nil"),
+            Value::Number(num) => print!("{}", num),
+        }
     }
 }

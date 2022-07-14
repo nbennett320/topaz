@@ -1,5 +1,5 @@
 use crate::opcode::{from_u8, Opcode};
-use crate::value::{print, Value};
+use crate::value::Value;
 
 pub struct Chunk {
     pub code: Vec<u8>,
@@ -70,7 +70,7 @@ impl Chunk {
     fn constant_instruction(&self, name: &str, offset: usize) -> usize {
         let constant = self.code[offset + 1] as usize;
         print!("{} {} ", name, constant);
-        print(&self.constants[constant]);
+        self.constants[constant].print();
         print!("\n");
         return offset + 2;
     }
