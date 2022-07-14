@@ -21,6 +21,19 @@ impl Value {
             _ => false,
         }
     }
+
+    pub fn eq(&self, other: &Value) -> bool {
+        if std::mem::discriminant(self) != std::mem::discriminant(other) {
+            return false;
+        }
+
+        match (self, other) {
+            (Value::Bool(a), Value::Bool(b)) => a == b,
+            (Value::Number(a), Value::Number(b)) => a == b,
+            (Value::Nil, _) => true,
+            _ => unreachable!("Unrecognized value equality comparison"),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -45,5 +58,33 @@ mod tests {
     #[test]
     fn numbers_are_not_falsey() {
         assert_eq!(Value::Number(3.14).is_falsey(), false);
+    }
+
+    #[test]
+    fn nil_equals_nil() {
+        let a = Value::Nil;
+        let b = Value::Nil;
+        assert_eq!(a.eq(&b), true);
+    }
+
+    #[test]
+    fn equal_numbers_are_equal() {
+        let a = Value::Number(25.9);
+        let b = Value::Number(25.9);
+        assert_eq!(a.eq(&b), true);
+    }
+
+    #[test]
+    fn different_numbers_are_not_equal() {
+        let a = Value::Number(0.0);
+        let b = Value::Number(25.9);
+        assert_eq!(a.eq(&b), false);
+    }
+
+    #[test]
+    fn different_types_are_not_equal() {
+        let a = Value::Number(0.0);
+        let b = Value::Bool(false);
+        assert_eq!(a.eq(&b), false);
     }
 }
