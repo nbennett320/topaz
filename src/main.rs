@@ -8,10 +8,10 @@ mod vm;
 
 use chunk::Chunk;
 use opcode::Opcode;
+use parser::Parser;
+use scanner::Scanner;
 use value::Value;
 use vm::Vm;
-
-use scanner::Scanner;
 
 use std::{
     env, fs,
@@ -30,11 +30,14 @@ fn repl() {
             break;
         }
 
-        let mut s = Scanner::new(line);
-        let _ = s.scan_all();
-
-        // @TODO
-        // let res = interpret(&line);
+        let res = Parser::new(line).compile();
+        match res {
+            Ok(chunk) => {
+                Vm::new(chunk).run();
+                ()
+            }
+            Err(_) => println!("Compile error"),
+        }
     }
 }
 
