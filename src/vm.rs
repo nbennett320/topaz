@@ -33,14 +33,14 @@ impl Vm {
                     print!(" ");
                 }
                 print!("]");
-                print!("\n");
+                println!();
             }
 
             let instruction = self.read_byte();
             match from_u8(instruction) {
                 Opcode::Return => {
                     self.pop().print();
-                    print!("\n");
+                    println!();
                     break;
                 }
                 Opcode::Constant => {
@@ -123,7 +123,7 @@ impl Vm {
         let val2 = self.pop();
         let val1 = self.pop();
 
-        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1.clone(), val2.clone()) {
+        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1.clone(), val2) {
             (a, b)
         } else {
             self.runtime_error("Operands must be numbers");

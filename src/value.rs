@@ -16,7 +16,7 @@ impl Value {
         }
     }
 
-    pub fn is_falsey(self) -> bool {
+    pub fn is_falsey(&self) -> bool {
         match self {
             Value::Nil => true,
             Value::Bool(b) => !b,
