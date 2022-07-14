@@ -13,6 +13,7 @@ pub struct Parser {
     had_error: bool,
 }
 
+#[derive(Clone, Copy)]
 enum Precedence {
     None,
     Assignment, // =
@@ -25,6 +26,25 @@ enum Precedence {
     Unary,      // ! -
     Call,       // . ()
     Primary,
+}
+
+impl Precedence {
+    pub fn from(x: usize) -> Precedence {
+        match x {
+            0 => Precedence::None,
+            1 => Precedence::Assignment,
+            2 => Precedence::Or,
+            3 => Precedence::And,
+            4 => Precedence::Equality,
+            5 => Precedence::Comparison,
+            6 => Precedence::Term,
+            7 => Precedence::Factor,
+            8 => Precedence::Unary,
+            9 => Precedence::Call,
+            10 => Precedence::Primary,
+            _ => Precedence::None,
+        }
+    }
 }
 
 struct ParseRule {
@@ -236,6 +256,10 @@ const rules: [ParseRule; 40] = [
     },
 ];
 
+fn get_rule(token_type: TokenType) -> &'static ParseRule {
+    &rules[to_usize(token_type)]
+}
+
 impl Parser {
     pub fn new(source: String) -> Parser {
         Parser {
@@ -248,11 +272,14 @@ impl Parser {
     }
 
     pub fn compile(mut self) -> Result<Chunk, InterpretError> {
+        self.advance();
+        self.expression();
+        self.emit_op(Opcode::Return);
         Ok(self.chunk)
     }
 
     fn expression(&mut self) {
-        // self.parse_precedence(Precedence::Assignment);
+        self.parse_precedence(Precedence::Assignment);
     }
 
     pub fn advance(&mut self) {
@@ -260,6 +287,7 @@ impl Parser {
 
         while let Some(tok) = self.scanner.next() {
             self.current = tok;
+            break;
         }
     }
 
@@ -326,8 +354,7 @@ impl Parser {
 
     fn unary(&mut self) {
         let operator = self.previous.token_type.clone();
-
-        //self.parse_precedence(Precedence::Unary);
+        self.parse_precedence(Precedence::Unary);
 
         match operator {
             TokenType::Minus => self.emit_op(Opcode::Negate),
@@ -337,8 +364,9 @@ impl Parser {
 
     fn binary(&mut self) {
         let operator = self.previous.token_type.clone();
-
-        //self.parse_precedence();
+        let rule = get_rule(operator.clone());
+        let precedence = Precedence::from(rule.precedence as usize + 1);
+        self.parse_precedence(precedence);
 
         match operator {
             TokenType::Plus => self.emit_op(Opcode::Add),
@@ -347,5 +375,26 @@ impl Parser {
             TokenType::Slash => self.emit_op(Opcode::Divide),
             _ => (),
         }
+    }
+
+    fn parse_precedence(&mut self, precedence: Precedence) {
+        self.advance();
+        let rule = get_rule(self.previous.token_type.clone());
+
+        if let Some(prefix_rule) = rule.prefix {
+            prefix_rule(self);
+
+            let prec_u8 = precedence as u8;
+            while prec_u8 <= get_rule(self.current.token_type.clone()).precedence as u8 {
+                self.advance();
+                if let Some(infix_rule) = get_rule(self.previous.token_type.clone()).infix {
+                    infix_rule(self);
+                }
+            }
+
+            return;
+        }
+
+        self.error("Expected expression");
     }
 }
