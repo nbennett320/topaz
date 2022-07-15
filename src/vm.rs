@@ -73,6 +73,7 @@ impl Vm {
                 Opcode::Subtract => self.binary_op('-'),
                 Opcode::Multiply => self.binary_op('*'),
                 Opcode::Divide => self.binary_op('/'),
+                Opcode::Mod => self.binary_op('%'),
                 Opcode::Nil => self.push(Value::Nil),
                 Opcode::True => self.push(Value::Bool(true)),
                 Opcode::False => self.push(Value::Bool(false)),
@@ -173,11 +174,14 @@ impl Vm {
             return;
         };
 
+        println!("op: {}", op);
+
         let result = match op {
             '+' => Value::Number(a + b),
             '-' => Value::Number(a - b),
             '*' => Value::Number(a * b),
             '/' => Value::Number(a / b),
+            '%' => Value::Number(a % b),
             '>' => Value::Bool(a > b),
             '<' => Value::Bool(a < b),
             '&' => {

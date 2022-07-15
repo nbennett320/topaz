@@ -173,6 +173,7 @@ impl Parser {
             TokenType::Minus => self.emit_op(Opcode::Subtract),
             TokenType::Star => self.emit_op(Opcode::Multiply),
             TokenType::Slash => self.emit_op(Opcode::Divide),
+            TokenType::Mod => self.emit_op(Opcode::Mod),
             TokenType::BangEqual => self.emit_ops(Opcode::Equal, Opcode::Not),
             TokenType::EqualEqual => self.emit_op(Opcode::Equal),
             TokenType::Greater => self.emit_op(Opcode::Greater),

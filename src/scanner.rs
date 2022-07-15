@@ -57,6 +57,7 @@ impl Scanner {
             '+' => Some(self.make_token(TokenType::Plus)),
             '/' => Some(self.make_token(TokenType::Slash)),
             '*' => Some(self.make_token(TokenType::Star)),
+            '%' => Some(self.make_token(TokenType::Mod)),
             '&' => match self.peek_next() {
                 '&' => Some(self.make_token(TokenType::LogicalAnd)),
                 _ => Some(self.make_token(TokenType::BitwiseAnd)),

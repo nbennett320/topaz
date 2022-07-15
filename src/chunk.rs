@@ -52,6 +52,7 @@ impl Chunk {
             Opcode::Subtract => self.simple_instruction("Subtract", offset),
             Opcode::Multiply => self.simple_instruction("Multiply", offset),
             Opcode::Divide => self.simple_instruction("Divide", offset),
+            Opcode::Mod => self.simple_instruction("Mod", offset),
             Opcode::Nil => self.simple_instruction("Nil", offset),
             Opcode::True => self.simple_instruction("True", offset),
             Opcode::False => self.simple_instruction("False", offset),
