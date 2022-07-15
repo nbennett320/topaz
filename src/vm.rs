@@ -252,6 +252,21 @@ impl Vm {
 
                 self.push(result)
             }
+            (Value::String(a), Value::String(b)) => {
+                let result: Value = match op {
+                    '+' => Value::String(format!("{}{}", a, b)),
+                    '-' | '*' | '/' | '%' | '>' | '<' | '&' | '|' => {
+                        let msg = format!("no {} operation on string '{}' and '{}'", op, a, b);
+                        self.runtime_error(&msg);
+                        Value::Nil
+                    }
+                    'A' => Value::Bool(a.len() > 0 && b.len() > 0),
+                    'O' => Value::Bool(a.len() > 0 || b.len() > 0),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
+
+                self.push(result)
+            },
             _ => {
                 unreachable!("binary_op: invalid op {}", op);
             }
