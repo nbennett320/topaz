@@ -154,12 +154,12 @@ impl TokenType {
             TokenType::LogicalAnd => &ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Term,
+                precedence: Precedence::And,
             },
             TokenType::LogicalOr => &ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Term,
+                precedence: Precedence::Or,
             },
             TokenType::Bang => &ParseRule {
                 prefix: Some(Parser::unary),

@@ -182,6 +182,8 @@ impl Parser {
             TokenType::LessEqual => self.emit_ops(Opcode::Greater, Opcode::Not),
             TokenType::BitwiseAnd => self.emit_op(Opcode::BitwiseAnd),
             TokenType::BitwiseOr => self.emit_op(Opcode::BitwiseOr),
+            TokenType::LogicalAnd => self.emit_op(Opcode::LogicalAnd),
+            TokenType::LogicalOr => self.emit_op(Opcode::LogicalOr),
             _ => (),
         }
     }

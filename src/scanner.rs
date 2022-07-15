@@ -58,13 +58,21 @@ impl Scanner {
             '/' => Some(self.make_token(TokenType::Slash)),
             '*' => Some(self.make_token(TokenType::Star)),
             '%' => Some(self.make_token(TokenType::Mod)),
-            '&' => match self.peek_next() {
-                '&' => Some(self.make_token(TokenType::LogicalAnd)),
-                _ => Some(self.make_token(TokenType::BitwiseAnd)),
+            '&' => {
+                let token_type = if self.matches('&') {
+                    TokenType::LogicalAnd
+                } else {
+                    TokenType::BitwiseAnd
+                };
+                Some(self.make_token(token_type))
             },
-            '|' => match self.peek_next() {
-                '|' => Some(self.make_token(TokenType::LogicalOr)),
-                _ => Some(self.make_token(TokenType::BitwiseOr)),
+            '|' => {
+                let token_type = if self.matches('|') {
+                    TokenType::LogicalOr
+                } else {
+                    TokenType::BitwiseOr
+                };
+                Some(self.make_token(token_type))
             },
             '!' => {
                 let token_type = if self.matches('=') {
