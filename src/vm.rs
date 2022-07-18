@@ -59,16 +59,7 @@ impl Vm {
                     };
                     self.push(negated_value)
                 }
-                Opcode::Add => {
-                    if let (Value::String(mut a), Value::String(b)) =
-                        (self.peek(1).clone(), self.peek(0))
-                    {
-                        a.push_str(b);
-                        self.push(Value::String(a))
-                    } else {
-                        self.binary_op('+')
-                    }
-                }
+                Opcode::Add => self.binary_op('+'),
                 Opcode::Subtract => self.binary_op('-'),
                 Opcode::Multiply => self.binary_op('*'),
                 Opcode::Divide => self.binary_op('/'),
