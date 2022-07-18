@@ -173,6 +173,7 @@ impl Parser {
             TokenType::Minus => self.emit_op(Opcode::Subtract),
             TokenType::Star => self.emit_op(Opcode::Multiply),
             TokenType::Slash => self.emit_op(Opcode::Divide),
+            TokenType::Mod => self.emit_op(Opcode::Mod),
             TokenType::BangEqual => self.emit_ops(Opcode::Equal, Opcode::Not),
             TokenType::EqualEqual => self.emit_op(Opcode::Equal),
             TokenType::Greater => self.emit_op(Opcode::Greater),
@@ -181,6 +182,8 @@ impl Parser {
             TokenType::LessEqual => self.emit_ops(Opcode::Greater, Opcode::Not),
             TokenType::BitwiseAnd => self.emit_op(Opcode::BitwiseAnd),
             TokenType::BitwiseOr => self.emit_op(Opcode::BitwiseOr),
+            TokenType::LogicalAnd => self.emit_op(Opcode::LogicalAnd),
+            TokenType::LogicalOr => self.emit_op(Opcode::LogicalOr),
             _ => (),
         }
     }

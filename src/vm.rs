@@ -34,8 +34,7 @@ impl Vm {
                 print!("stack:          ");
                 print!("[ ");
                 for value in &mut self.stack {
-                    value.print();
-                    print!(" ");
+                    print!("{} ", value);
                 }
                 print!("]");
                 println!();
@@ -60,19 +59,11 @@ impl Vm {
                     };
                     self.push(negated_value)
                 }
-                Opcode::Add => {
-                    if let (Value::String(mut a), Value::String(b)) =
-                        (self.peek(1).clone(), self.peek(0))
-                    {
-                        a.push_str(b);
-                        self.push(Value::String(a))
-                    } else {
-                        self.binary_op('+')
-                    }
-                }
+                Opcode::Add => self.binary_op('+'),
                 Opcode::Subtract => self.binary_op('-'),
                 Opcode::Multiply => self.binary_op('*'),
                 Opcode::Divide => self.binary_op('/'),
+                Opcode::Mod => self.binary_op('%'),
                 Opcode::Nil => self.push(Value::Nil),
                 Opcode::True => self.push(Value::Bool(true)),
                 Opcode::False => self.push(Value::Bool(false)),
@@ -92,8 +83,7 @@ impl Vm {
                 Opcode::BitwiseAnd => self.binary_op('&'),
                 Opcode::BitwiseOr => self.binary_op('|'),
                 Opcode::Print => {
-                    self.pop().print();
-                    println!();
+                    print!("{}\n", self.pop());
                 }
                 Opcode::Pop => {
                     self.pop();
@@ -165,46 +155,112 @@ impl Vm {
         let val2 = self.pop();
         let val1 = self.pop();
 
-        let (a, b) = if let (Value::Number(a), Value::Number(b)) = (val1.clone(), val2) {
-            (a, b)
-        } else {
-            self.runtime_error("Operands must be numbers");
-            self.push(val1);
-            return;
-        };
+        match (val1, val2) {
+            (Value::Number(a), Value::Number(b)) => {
+                let result = match op {
+                    '+' => Value::Number(a + b),
+                    '-' => Value::Number(a - b),
+                    '*' => Value::Number(a * b),
+                    '/' => Value::Number(a / b),
+                    '%' => Value::Number(a % b),
+                    '>' => Value::Bool(a > b),
+                    '<' => Value::Bool(a < b),
+                    '&' => {
+                        let a_diff = (a - a.round()).abs();
+                        let b_diff = (b - b.round()).abs();
 
-        let result = match op {
-            '+' => Value::Number(a + b),
-            '-' => Value::Number(a - b),
-            '*' => Value::Number(a * b),
-            '/' => Value::Number(a / b),
-            '>' => Value::Bool(a > b),
-            '<' => Value::Bool(a < b),
-            '&' => {
-                let a_diff = (a - a.round()).abs();
-                let b_diff = (b - b.round()).abs();
+                        if a_diff > 0f64 || b_diff > 0f64 {
+                            self.runtime_error("Cannot use fp operands for & operator");
+                        }
 
-                if a_diff > 0f64 || b_diff > 0f64 {
-                    self.runtime_error("Cannot use fp operands for & operator");
-                }
+                        Value::Number((a.round() as i64 & b.round() as i64) as f64)
+                    }
+                    '|' => {
+                        let a_diff = (a - a.round()).abs();
+                        let b_diff = (b - b.round()).abs();
 
-                Value::Number((a.round() as i64 & b.round() as i64) as f64)
+                        if a_diff > 0f64 || b_diff > 0f64 {
+                            self.runtime_error("Cannot use fp operands for | operator");
+                        }
+
+                        Value::Number((a.round() as i64 | b.round() as i64) as f64)
+                    },
+                    'A' => Value::Bool(a != 0f64 && b != 0f64),
+                    'O' => Value::Bool(a != 0f64 || b != 0f64),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
+
+                self.push(result)
+            },
+            (Value::Bool(n), Value::Number(m)) => {
+                let (a, b) = (1f64, m);
+                
+                let result = match op {
+                    '+' | '-' | '*' | '/' | '%' | '>' | '<' => {
+                        self.runtime_error("operands must be numbers");
+                        Value::Nil
+                    }
+                    '&' => Value::Number((a as i64 & b.round() as i64) as f64),
+                    '|' => Value::Number((a as i64 | b.round() as i64) as f64),
+                    'A' => Value::Bool(n && b != 0f64),
+                    'O' => Value::Bool(n || b != 0f64),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
+
+                self.push(result)
+            },
+            (Value::Number(n), Value::Bool(m)) => {
+                let (a, b) = (n, 1f64);
+                
+                let result = match op {
+                    '+' | '-' | '*' | '/' | '%' | '>' | '<' => {
+                        self.runtime_error("operands must be numbers");
+                        Value::Nil
+                    }
+                    '&' => Value::Number((a.round() as i64 & b as i64) as f64),
+                    '|' => Value::Number((a.round() as i64 | b as i64) as f64),
+                    'A' => Value::Bool(a != 0f64 && m),
+                    'O' => Value::Bool(a != 0f64 || m),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
+
+                self.push(result)
+            },
+            (Value::Bool(n), Value::Bool(m)) => {
+                let (a, b) = (1f64, 1f64);
+
+                let result = match op {
+                    '+' | '-' | '*' | '/' | '%' | '>' | '<' => {
+                        self.runtime_error("operands must be numbers");
+                        Value::Nil
+                    }
+                    '&' => Value::Number((a as i64 & b as i64) as f64),
+                    '|' => Value::Number((a as i64 | b as i64) as f64),
+                    'A' => Value::Bool(n && m),
+                    'O' => Value::Bool(n || m),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
+
+                self.push(result)
             }
-            '|' => {
-                let a_diff = (a - a.round()).abs();
-                let b_diff = (b - b.round()).abs();
+            (Value::String(a), Value::String(b)) => {
+                let result: Value = match op {
+                    '+' => Value::String(format!("{}{}", a, b)),
+                    '-' | '*' | '/' | '%' | '>' | '<' | '&' | '|' => {
+                        let msg = format!("no {} operation on string '{}' and '{}'", op, a, b);
+                        self.runtime_error(&msg);
+                        Value::Nil
+                    }
+                    'A' => Value::Bool(a.len() > 0 && b.len() > 0),
+                    'O' => Value::Bool(a.len() > 0 || b.len() > 0),
+                    _ => unreachable!("binary_op: invalid op {}", op),
+                };
 
-                if a_diff > 0f64 || b_diff > 0f64 {
-                    self.runtime_error("Cannot use fp operands for | operator");
-                }
-
-                Value::Number((a.round() as i64 | b.round() as i64) as f64)
+                self.push(result)
+            },
+            _ => {
+                unreachable!("binary_op: invalid op {}", op);
             }
-            // 'A' => Value::Bool(a as bool && b),
-            // 'O' => Value::Bool(a || b),
-            _ => unreachable!("binary_op: invalid op {}", op),
-        };
-
-        self.push(result)
+        }
     }
 }

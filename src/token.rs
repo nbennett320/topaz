@@ -16,6 +16,7 @@ pub enum TokenType {
     Semicolon,
     Slash,
     Star,
+    Mod,
     BitwiseAnd,
     BitwiseOr,
 
@@ -135,6 +136,11 @@ impl TokenType {
                 infix: Some(Parser::binary),
                 precedence: Precedence::Factor,
             },
+            TokenType::Mod => &ParseRule {
+                prefix: None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::Factor,
+            },
             TokenType::BitwiseAnd => &ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
@@ -148,12 +154,12 @@ impl TokenType {
             TokenType::LogicalAnd => &ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Term,
+                precedence: Precedence::And,
             },
             TokenType::LogicalOr => &ParseRule {
                 prefix: None,
                 infix: Some(Parser::binary),
-                precedence: Precedence::Term,
+                precedence: Precedence::Or,
             },
             TokenType::Bang => &ParseRule {
                 prefix: Some(Parser::unary),

@@ -1,4 +1,6 @@
-#[derive(Clone)]
+use std::fmt::{self, Display, Formatter};
+
+#[derive(Debug, Clone)]
 pub enum Value {
     Bool(bool),
     Nil,
@@ -6,16 +8,24 @@ pub enum Value {
     String(String),
 }
 
-impl Value {
-    pub fn print(&self) {
+impl From<i64> for Value {
+    fn from(n: i64) -> Self {
+        Value::Number(n as f64)
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Value::Bool(b) => print!("{}", b),
-            Value::Nil => print!("nil"),
-            Value::Number(num) => print!("{}", num),
-            Value::String(s) => print!("{}", s),
+            Value::Bool(x) => write!(f, "{}", x),
+            Value::Number(x) => write!(f, "{}", x),
+            Value::Nil => write!(f, "nil"),
+            Value::String(s) => write!(f, "{}", s)
         }
     }
+}
 
+impl Value {
     pub fn is_falsey(&self) -> bool {
         match self {
             Value::Nil => true,

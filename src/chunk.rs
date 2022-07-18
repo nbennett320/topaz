@@ -52,6 +52,7 @@ impl Chunk {
             Opcode::Subtract => self.simple_instruction("Subtract", offset),
             Opcode::Multiply => self.simple_instruction("Multiply", offset),
             Opcode::Divide => self.simple_instruction("Divide", offset),
+            Opcode::Mod => self.simple_instruction("Mod", offset),
             Opcode::Nil => self.simple_instruction("Nil", offset),
             Opcode::True => self.simple_instruction("True", offset),
             Opcode::False => self.simple_instruction("False", offset),
@@ -61,8 +62,8 @@ impl Chunk {
             Opcode::Less => self.simple_instruction("Less", offset),
             Opcode::LogicalAnd => self.simple_instruction("LogicalAnd", offset),
             Opcode::LogicalOr => self.simple_instruction("LogicalOr", offset),
-            Opcode::BitwiseAnd => self.simple_instruction("LogicalAnd", offset),
-            Opcode::BitwiseOr => self.simple_instruction("LogicalOr", offset),
+            Opcode::BitwiseAnd => self.simple_instruction("BitwiseAnd", offset),
+            Opcode::BitwiseOr => self.simple_instruction("BitwiseOr", offset),
             Opcode::Print => self.simple_instruction("Print", offset),
             Opcode::Pop => self.simple_instruction("Pop", offset),
             Opcode::DefineGlobal => self.constant_instruction("DefineGlobal", offset),
@@ -82,8 +83,7 @@ impl Chunk {
     fn constant_instruction(&self, name: &str, offset: usize) -> usize {
         let constant = self.code[offset + 1] as usize;
         print!("{} {} ", name, constant);
-        self.constants[constant].print();
-        println!();
+        print!("{}\n", self.constants[constant]);
         offset + 2
     }
 }
