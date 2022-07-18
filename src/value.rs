@@ -20,7 +20,7 @@ impl Display for Value {
             Value::Bool(x) => write!(f, "{}", x),
             Value::Number(x) => write!(f, "{}", x),
             Value::Nil => write!(f, "nil"),
-            Value::String(s) => write!(f, "{}", s)
+            Value::String(s) => write!(f, "{}", s),
         }
     }
 }

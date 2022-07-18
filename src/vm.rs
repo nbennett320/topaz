@@ -184,17 +184,17 @@ impl Vm {
                         }
 
                         Value::Number((a.round() as i64 | b.round() as i64) as f64)
-                    },
+                    }
                     'A' => Value::Bool(a != 0f64 && b != 0f64),
                     'O' => Value::Bool(a != 0f64 || b != 0f64),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
                 self.push(result)
-            },
+            }
             (Value::Bool(n), Value::Number(m)) => {
                 let (a, b) = (1f64, m);
-                
+
                 let result = match op {
                     '+' | '-' | '*' | '/' | '%' | '>' | '<' => {
                         self.runtime_error("operands must be numbers");
@@ -208,10 +208,10 @@ impl Vm {
                 };
 
                 self.push(result)
-            },
+            }
             (Value::Number(n), Value::Bool(m)) => {
                 let (a, b) = (n, 1f64);
-                
+
                 let result = match op {
                     '+' | '-' | '*' | '/' | '%' | '>' | '<' => {
                         self.runtime_error("operands must be numbers");
@@ -225,7 +225,7 @@ impl Vm {
                 };
 
                 self.push(result)
-            },
+            }
             (Value::Bool(n), Value::Bool(m)) => {
                 let (a, b) = (1f64, 1f64);
 
@@ -257,7 +257,7 @@ impl Vm {
                 };
 
                 self.push(result)
-            },
+            }
             _ => {
                 unreachable!("binary_op: invalid op {}", op);
             }

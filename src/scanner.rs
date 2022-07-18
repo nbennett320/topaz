@@ -65,7 +65,7 @@ impl Scanner {
                     TokenType::BitwiseAnd
                 };
                 Some(self.make_token(token_type))
-            },
+            }
             '|' => {
                 let token_type = if self.matches('|') {
                     TokenType::LogicalOr
@@ -73,7 +73,7 @@ impl Scanner {
                     TokenType::BitwiseOr
                 };
                 Some(self.make_token(token_type))
-            },
+            }
             '!' => {
                 let token_type = if self.matches('=') {
                     TokenType::BangEqual
