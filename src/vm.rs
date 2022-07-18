@@ -130,6 +130,15 @@ impl Vm {
                     let slot = self.read_byte() as usize;
                     self.stack[slot] = self.peek(0).clone();
                 }
+                Opcode::JumpIfFalse => {
+                    println!("jumping if false");
+                    let rs = &self.chunk.code[0..=1];
+                    let offset: u16 = (((rs[1] as u16) << 8) | rs[0] as u16).into();
+                    if self.peek(0).is_falsey() {
+                        println!("its falsy");
+                        self.ip += offset as usize;
+                    }
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }

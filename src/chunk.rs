@@ -76,6 +76,7 @@ impl Chunk {
             Opcode::SetGlobal => self.constant_instruction("SetGlobal", offset),
             Opcode::GetLocal => self.byte_instruction("GetLocal", offset),
             Opcode::SetLocal => self.byte_instruction("SetLocal", offset),
+            Opcode::JumpIfFalse => self.byte_instruction("JumpIfFalse", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1

@@ -2,6 +2,8 @@ use crate::parse_rule::ParseRule;
 use crate::parser::Parser;
 use crate::precedence::Precedence;
 
+use std::fmt::{self, Display, Formatter};
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     // 1 character tokens
@@ -247,7 +249,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::If => &ParseRule {
-                prefix: None,
+                prefix: Some(Parser::conditional),
                 infix: None,
                 precedence: Precedence::None,
             },
@@ -301,6 +303,58 @@ impl TokenType {
                 infix: None,
                 precedence: Precedence::None,
             },
+        }
+    }
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenType::LeftParen => write!(f, "LeftParen"),
+            TokenType::RightParen => write!(f, "RightParen"),
+            TokenType::LeftBrace => write!(f, "LeftBrace"),
+            TokenType::RightBrace => write!(f, "RightBrace"),
+            TokenType::Comma => write!(f, "Comma"),
+            TokenType::Dot => write!(f, "Dot"),
+            TokenType::Minus => write!(f, "Minus"),
+            TokenType::Plus => write!(f, "Plus"),
+            TokenType::Semicolon => write!(f, "Semicolon"),
+            TokenType::Slash => write!(f, "Slash"),
+            TokenType::Star => write!(f, "Star"),
+            TokenType::Mod => write!(f, "Mod"),
+            TokenType::BitwiseAnd => write!(f, "BitwiseAnd"),
+            TokenType::BitwiseOr => write!(f, "BitwiseOr"),
+            TokenType::LogicalAnd => write!(f, "LogicalAnd"),
+            TokenType::LogicalOr => write!(f, "LogicalOr"),
+            TokenType::Bang => write!(f, "Bang"),
+            TokenType::BangEqual => write!(f, "BangEqual"),
+            TokenType::Equal => write!(f, "Equal"),
+            TokenType::EqualEqual => write!(f, "EqualEqual"),
+            TokenType::Greater => write!(f, "Greater"),
+            TokenType::GreaterEqual => write!(f, "GreaterEqual"),
+            TokenType::Less => write!(f, "Less"),
+            TokenType::LessEqual => write!(f, "LessEqual"),
+            TokenType::Identifier(_) => write!(f, "Identifier"),
+            TokenType::String(_) => write!(f, "String"),
+            TokenType::Number(_) => write!(f, "Number"),
+            TokenType::And => write!(f, "And"),
+            TokenType::Class => write!(f, "Class"),
+            TokenType::Else => write!(f, "Else"),
+            TokenType::False => write!(f, "False"),
+            TokenType::For => write!(f, "For"),
+            TokenType::Fn => write!(f, "Fn"),
+            TokenType::If => write!(f, "If"),
+            TokenType::Nil => write!(f, "Nil"),
+            TokenType::Or => write!(f, "Or"),
+            TokenType::Print => write!(f, "Print"),
+            TokenType::Return => write!(f, "Return"),
+            TokenType::Super => write!(f, "Super"),
+            TokenType::This => write!(f, "This"),
+            TokenType::True => write!(f, "True"),
+            TokenType::Var => write!(f, "Var"),
+            TokenType::While => write!(f, "While"),
+            TokenType::Error(_) => write!(f, "Error"),
+            _ => write!(f, "Undefined Token!")
         }
     }
 }

@@ -95,6 +95,17 @@ impl Parser {
         self.consume(TokenType::RightBrace, "Expect '}' after block");
     }
 
+    pub fn conditional(&mut self, val: bool) {
+        println!("executing conditional: {}", val);
+        println!("token_type: {}, current: {:?}", TokenType::If, self.current.token_type);
+        self.consume(TokenType::LeftParen, "Expect expression to be evaluated as boolean");
+        self.expression();
+        self.consume(TokenType::RightParen, "Expect expression to be evaluated as boolean");
+        let then_jump = self.emit_jump(Opcode::JumpIfFalse);
+        self.statement();
+        self.patch_jump(then_jump);
+    }
+
     pub fn advance(&mut self) {
         self.previous = self.current.clone();
 
@@ -160,6 +171,23 @@ impl Parser {
     fn emit_constant(&mut self, value: Value) {
         let constant = self.make_constant(value) as u8;
         self.emit_bytes(Opcode::Constant as u8, constant);
+    }
+
+    fn emit_jump(&mut self, op: Opcode) -> usize {
+        self.emit_byte(op as u8);
+        self.emit_bytes(0xff, 0xff);
+        self.chunk.code.len() - 2
+    }
+
+    fn patch_jump(&mut self, offset: usize) {
+        let jump = self.chunk.code.len();
+
+        if jump > std::i16::MAX as usize {
+            self.error("Jump is out of bounds");
+        }
+
+        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
+        self.chunk.code[offset+1] = (jump & 0xff) as u8;
     }
 
     fn make_constant(&mut self, value: Value) -> usize {
