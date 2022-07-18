@@ -1,4 +1,5 @@
 mod chunk;
+mod function;
 mod opcode;
 mod parse_rule;
 mod parser;
@@ -33,9 +34,9 @@ fn repl() {
 
         let res = Parser::new(line).compile();
         match res {
-            Ok(chunk) => {
-                chunk.disassemble("repl chunk");
-                let _ = vm.run(chunk);
+            Ok(func) => {
+                func.chunk.disassemble("repl chunk");
+                let _ = vm.run(func.chunk);
             }
             Err(_) => println!("Compile error"),
         }
@@ -50,9 +51,10 @@ fn run_file(fname: &str) {
 
     let res = Parser::new(source).compile();
     match res {
-        Ok(chunk) => {
-            chunk.disassemble(format!("script {} chunk", fname).as_str());
-            let _ = vm.run(chunk);
+        Ok(func) => {
+            func.chunk
+                .disassemble(format!("script {} chunk", fname).as_str());
+            let _ = vm.run(func.chunk);
         }
         Err(_) => println!("Compile error"),
     }

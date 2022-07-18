@@ -1,16 +1,16 @@
+use crate::function::{Function, FunctionType};
 use crate::opcode::Opcode;
 use crate::precedence::Precedence;
 use crate::token::{Token, TokenType};
 use crate::value::Value;
 use crate::vm::InterpretError;
-use crate::Chunk;
 use crate::Scanner;
 
 pub struct Parser {
     current: Token,
     previous: Token,
     scanner: Scanner,
-    chunk: Chunk,
+    functions: Vec<Function>,
     locals: Vec<Local>,
     had_error: bool,
     end_flag: bool,
@@ -30,7 +30,7 @@ impl Parser {
             current: Token::new(TokenType::Error(String::from("current token")), 0, 0, 0),
             previous: Token::new(TokenType::Error(String::from("current token")), 0, 0, 0),
             scanner: Scanner::new(source),
-            chunk: Chunk::new(),
+            functions: Vec::new(),
             locals: Vec::new(),
             had_error: false,
             end_flag: false,
@@ -39,7 +39,11 @@ impl Parser {
         }
     }
 
-    pub fn compile(mut self) -> Result<Chunk, InterpretError> {
+    pub fn compile(mut self) -> Result<Function, InterpretError> {
+        // add top level functions to function stack
+        self.functions
+            .push(Function::new(String::new(), FunctionType::Script));
+
         self.advance();
 
         while !self.end_flag {
@@ -47,7 +51,7 @@ impl Parser {
         }
 
         self.emit_op(Opcode::Return);
-        Ok(self.chunk)
+        Ok(self.functions[0].clone())
     }
 
     fn expression(&mut self) {
@@ -83,8 +87,35 @@ impl Parser {
                 self.advance();
                 self.while_statement();
             }
+            TokenType::Fn => {
+                self.advance();
+                self.function_definition();
+            }
             _ => self.expression_statement(),
         }
+    }
+
+    fn function_definition(&mut self) {
+        if let TokenType::Identifier(name) = self.current.token_type.clone() {
+            self.advance();
+            self.function();
+            let global = self.make_constant(Value::String(name));
+            self.emit_op(Opcode::DefineGlobal);
+            self.emit_byte(global as u8);
+        }
+    }
+
+    fn function(&mut self) {
+        self.begin_scope();
+        self.consume(TokenType::LeftParen, "Expect '(' after function name");
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after function parameters",
+        );
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body");
+
+        self.block();
+        println!("hi");
     }
 
     fn expression_statement(&mut self) {
@@ -176,7 +207,11 @@ impl Parser {
     }
 
     fn emit_byte(&mut self, byte: u8) {
-        self.chunk.write(byte, self.previous.line);
+        self.functions
+            .last_mut()
+            .unwrap()
+            .chunk
+            .write(byte, self.previous.line);
     }
 
     fn emit_bytes(&mut self, a: u8, b: u8) {
@@ -228,7 +263,7 @@ impl Parser {
     }
 
     fn make_constant(&mut self, value: Value) -> usize {
-        let constant = self.chunk.add_constant(value);
+        let constant = self.functions.last_mut().unwrap().chunk.add_constant(value);
         if constant > std::u8::MAX as usize {
             self.error("Too many constants in this chunk");
             0

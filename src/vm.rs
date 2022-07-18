@@ -16,6 +16,8 @@ pub enum InterpretError {
     RuntimeError,
 }
 
+struct CallFrame {}
+
 impl Vm {
     pub fn new() -> Vm {
         Vm {
