@@ -23,6 +23,8 @@ pub enum Opcode {
     DefineGlobal,
     GetGlobal,
     SetGlobal,
+    GetLocal,
+    SetLocal,
 
     Unknown,
 }
@@ -53,6 +55,8 @@ pub fn from_u8(x: u8) -> Opcode {
         21 => Opcode::DefineGlobal,
         22 => Opcode::GetGlobal,
         23 => Opcode::SetGlobal,
+        24 => Opcode::GetLocal,
+        25 => Opcode::SetLocal,
         _ => Opcode::Unknown,
     }
 }

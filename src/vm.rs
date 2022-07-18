@@ -122,6 +122,14 @@ impl Vm {
                         unreachable!("Did not receive a String in SetGlobal")
                     }
                 }
+                Opcode::GetLocal => {
+                    let slot = self.read_byte() as usize;
+                    self.push(self.stack[slot].clone());
+                }
+                Opcode::SetLocal => {
+                    let slot = self.read_byte() as usize;
+                    self.stack[slot] = self.peek(0).clone();
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }

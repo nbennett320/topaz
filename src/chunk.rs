@@ -69,6 +69,8 @@ impl Chunk {
             Opcode::DefineGlobal => self.constant_instruction("DefineGlobal", offset),
             Opcode::GetGlobal => self.constant_instruction("GetGlobal", offset),
             Opcode::SetGlobal => self.constant_instruction("SetGlobal", offset),
+            Opcode::GetLocal => self.byte_instruction("GetLocal", offset),
+            Opcode::SetLocal => self.byte_instruction("SetLocal", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1
@@ -85,6 +87,12 @@ impl Chunk {
         let constant = self.code[offset + 1] as usize;
         print!("{} {} ", name, constant);
         print!("{}\n", self.constants[constant]);
+        offset + 2
+    }
+
+    fn byte_instruction(&self, name: &str, offset: usize) -> usize {
+        let slot = self.code[offset + 1];
+        println!("{} {}", name, slot);
         offset + 2
     }
 }

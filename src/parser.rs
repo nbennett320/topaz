@@ -11,8 +11,17 @@ pub struct Parser {
     previous: Token,
     scanner: Scanner,
     chunk: Chunk,
+    locals: Vec<Local>,
     had_error: bool,
     end_flag: bool,
+    local_count: usize,
+    scope_depth: usize,
+}
+
+/// represents a local variable
+struct Local {
+    name: String,
+    depth: usize,
 }
 
 impl Parser {
@@ -22,8 +31,11 @@ impl Parser {
             previous: Token::new(TokenType::Error(String::from("current token")), 0, 0, 0),
             scanner: Scanner::new(source),
             chunk: Chunk::new(),
+            locals: Vec::new(),
             had_error: false,
             end_flag: false,
+            local_count: 0,
+            scope_depth: 0,
         }
     }
 
@@ -46,7 +58,7 @@ impl Parser {
         if let TokenType::Identifier(name) = self.current.token_type.clone() {
             self.advance();
             if self.matches(TokenType::Equal) {
-                self.variable_declaration(name);
+                self.variable_definition(name);
                 return;
             }
         }
@@ -60,6 +72,12 @@ impl Parser {
                 self.advance();
                 self.print_statement();
             }
+            TokenType::LeftBrace => {
+                self.advance();
+                self.begin_scope();
+                self.block();
+                self.end_scope();
+            }
             _ => self.expression_statement(),
         }
     }
@@ -67,6 +85,14 @@ impl Parser {
     fn expression_statement(&mut self) {
         self.expression();
         self.emit_op(Opcode::Pop);
+    }
+
+    fn block(&mut self) {
+        while self.current.token_type != TokenType::RightBrace {
+            self.declaration()
+        }
+
+        self.consume(TokenType::RightBrace, "Expect '}' after block");
     }
 
     pub fn advance(&mut self) {
@@ -237,25 +263,93 @@ impl Parser {
 
     pub fn variable(&mut self, can_assign: bool) {
         if let TokenType::Identifier(name) = self.previous.token_type.clone() {
-            let var = self.make_constant(Value::String(name));
+            let (get_op, set_op, var) = match self.resolve_local(&self.previous) {
+                Ok(id) => (Opcode::GetLocal, Opcode::SetLocal, id),
+                Err(_) => (
+                    Opcode::GetGlobal,
+                    Opcode::SetGlobal,
+                    self.make_constant(Value::String(name)),
+                ),
+            };
             if can_assign && self.matches(TokenType::Equal) {
                 self.expression();
-                self.emit_op(Opcode::SetGlobal);
+                self.emit_op(set_op);
             } else {
-                self.emit_op(Opcode::GetGlobal);
+                self.emit_op(get_op);
             }
             self.emit_byte(var as u8);
         }
     }
 
-    fn variable_declaration(&mut self, name: String) {
+    fn variable_definition(&mut self, name: String) {
         self.expression();
-        let global = self.make_constant(Value::String(name));
-        self.define_global(global);
+
+        // local variable
+        if self.scope_depth > 0 {
+            self.add_local(name);
+        }
+        // global variable
+        else {
+            let global = self.make_constant(Value::String(name));
+            self.emit_op(Opcode::DefineGlobal);
+            self.emit_byte(global as u8);
+        }
     }
 
-    fn define_global(&mut self, global: usize) {
-        self.emit_op(Opcode::DefineGlobal);
-        self.emit_byte(global as u8);
+    fn add_local(&mut self, name: String) {
+        // no more than 255 local variables
+        if self.local_count == u8::MAX as usize {
+            self.error("Too many local variables");
+            return;
+        }
+
+        let local = Local {
+            name,
+            depth: self.scope_depth,
+        };
+
+        self.local_count += 1;
+        self.locals.push(local);
+    }
+
+    fn begin_scope(&mut self) {
+        self.scope_depth += 1;
+    }
+
+    fn end_scope(&mut self) {
+        self.scope_depth -= 1;
+
+        // pop local variables introduced in this scope off  the stack
+        while self.local_count > 0 && self.locals[self.local_count - 1].depth > self.scope_depth {
+            self.emit_op(Opcode::Pop);
+            self.local_count -= 1;
+        }
+    }
+
+    fn resolve_local(&self, name: &Token) -> Result<usize, ()> {
+        if self.locals.is_empty() {
+            return Err(());
+        }
+
+        let mut local_count = self.local_count - 1;
+        let identifier = match &name.token_type {
+            TokenType::Identifier(id) => id,
+            _ => unreachable!("Was not given an identifier to resolve_local"),
+        };
+
+        loop {
+            let local = &self.locals[local_count];
+            if local.name == *identifier {
+                return Ok(local_count);
+            }
+
+            if local_count == 0 {
+                break;
+            }
+
+            local_count -= 1;
+        }
+
+        Err(())
     }
 }
