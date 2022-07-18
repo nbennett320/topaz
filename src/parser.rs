@@ -78,6 +78,10 @@ impl Parser {
                 self.block();
                 self.end_scope();
             }
+            TokenType::If => {
+                self.advance();
+                self.if_statement();
+            }
             _ => self.expression_statement(),
         }
     }
@@ -93,6 +97,13 @@ impl Parser {
         }
 
         self.consume(TokenType::RightBrace, "Expect '}' after block");
+    }
+
+    fn if_statement(&mut self) {
+        self.expression();
+        let offset = self.emit_jump(Opcode::JumpIfFalse);
+        self.statement();
+        self.patch_jump(offset);
     }
 
     pub fn conditional(&mut self, val: bool) {
@@ -180,14 +191,14 @@ impl Parser {
     }
 
     fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.code.len();
+        let jump = self.chunk.code.len() - 2;
 
         if jump > std::i16::MAX as usize {
             self.error("Jump is out of bounds");
         }
 
         self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
-        self.chunk.code[offset+1] = (jump & 0xff) as u8;
+        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
     }
 
     fn make_constant(&mut self, value: Value) -> usize {

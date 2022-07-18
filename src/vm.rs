@@ -132,8 +132,8 @@ impl Vm {
                 }
                 Opcode::JumpIfFalse => {
                     println!("jumping if false");
-                    let rs = &self.chunk.code[0..=1];
-                    let offset: u16 = (((rs[1] as u16) << 8) | rs[0] as u16).into();
+                    let rs = &self.chunk.code[self.ip..=self.ip + 1];
+                    let offset: u16 = (((rs[0] as u16) << 8) | rs[1] as u16).into();
                     if self.peek(0).is_falsey() {
                         println!("its falsy");
                         self.ip += offset as usize;
