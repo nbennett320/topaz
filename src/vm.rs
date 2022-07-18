@@ -110,7 +110,16 @@ impl Vm {
                             }
                         }
                     } else {
-                        unreachable!("Did not receive a String in DefineGlobal")
+                        unreachable!("Did not receive a String in GetGlobal")
+                    }
+                }
+                Opcode::SetGlobal => {
+                    let constant = self.read_constant();
+                    if let Value::String(name) = constant {
+                        self.globals.insert(name, self.peek(0).clone());
+                        self.pop();
+                    } else {
+                        unreachable!("Did not receive a String in SetGlobal")
                     }
                 }
                 _ => return Err(InterpretError::CompileError),

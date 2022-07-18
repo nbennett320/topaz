@@ -87,7 +87,7 @@ impl Parser {
         self.advance();
     }
 
-    pub fn string(&mut self) {
+    pub fn string(&mut self, _can_assign: bool) {
         match &self.previous.token_type {
             TokenType::String(s) => self.emit_constant(Value::String(s.to_string())),
             _ => unreachable!("No string"),
@@ -107,7 +107,7 @@ impl Parser {
         self.had_error = true;
     }
 
-    pub fn number(&mut self) {
+    pub fn number(&mut self, _can_assign: bool) {
         if let TokenType::Number(num) = self.previous.token_type {
             self.emit_constant(Value::Number(num));
         }
@@ -146,12 +146,12 @@ impl Parser {
         }
     }
 
-    pub fn grouping(&mut self) {
+    pub fn grouping(&mut self, _can_assign: bool) {
         self.expression();
         self.consume(TokenType::RightParen, "Expect ')' after expression");
     }
 
-    pub fn unary(&mut self) {
+    pub fn unary(&mut self, _can_assign: bool) {
         let operator = self.previous.token_type.clone();
         self.parse_precedence(Precedence::Unary);
 
@@ -162,7 +162,7 @@ impl Parser {
         }
     }
 
-    pub fn binary(&mut self) {
+    pub fn binary(&mut self, _can_assign: bool) {
         let operator = self.previous.token_type.clone();
         let rule = operator.rule();
         let precedence = Precedence::from(rule.precedence as usize + 1);
@@ -193,13 +193,14 @@ impl Parser {
         let rule = self.previous.token_type.rule();
 
         if let Some(prefix_rule) = rule.prefix {
-            prefix_rule(self);
+            let can_assign = precedence as usize <= Precedence::Assignment as usize;
+            prefix_rule(self, can_assign);
 
             let prec_u8 = precedence as u8;
             while prec_u8 <= self.current.token_type.rule().precedence as u8 {
                 self.advance();
                 if let Some(infix_rule) = self.previous.token_type.rule().infix {
-                    infix_rule(self);
+                    infix_rule(self, can_assign);
                 }
             }
 
@@ -209,7 +210,7 @@ impl Parser {
         self.error("Expected expression");
     }
 
-    pub fn literal(&mut self) {
+    pub fn literal(&mut self, _can_assign: bool) {
         let token_type = self.previous.token_type.clone();
         match token_type {
             TokenType::False => self.emit_op(Opcode::False),
@@ -234,10 +235,15 @@ impl Parser {
         }
     }
 
-    pub fn variable(&mut self) {
+    pub fn variable(&mut self, can_assign: bool) {
         if let TokenType::Identifier(name) = self.previous.token_type.clone() {
             let var = self.make_constant(Value::String(name));
-            self.emit_op(Opcode::GetGlobal);
+            if can_assign && self.matches(TokenType::Equal) {
+                self.expression();
+                self.emit_op(Opcode::SetGlobal);
+            } else {
+                self.emit_op(Opcode::GetGlobal);
+            }
             self.emit_byte(var as u8);
         }
     }
