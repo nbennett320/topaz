@@ -1,6 +1,0 @@
-# should print 'hello world' 5 times
-a = 0
-while a < 5 {
-  print 'hello world'
-  a = a + 1
-}

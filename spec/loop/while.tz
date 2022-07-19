@@ -1,0 +1,10 @@
+# expect: hello world
+# expect: hello world
+# expect: hello world
+# expect: hello world
+# expect: hello world
+a = 0
+while a < 5 {
+  print 'hello world'
+  a = a + 1
+}
