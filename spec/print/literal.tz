@@ -1,0 +1,11 @@
+# expect: 3.4
+print 3.4
+
+# expect: nil
+print nil
+
+# expect: hello world
+print 'hello world'
+
+# expect: true
+print true
