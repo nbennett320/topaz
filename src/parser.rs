@@ -217,7 +217,7 @@ impl Parser {
 
     fn emit_loop(&mut self, loop_start: usize) {
         self.emit_op(Opcode::Loop);
-        
+
         let offset = self.chunk.code.len() - loop_start + 2;
         if offset as u16 > std::u16::MAX {
             self.error("Loop offset is out of bounds");
