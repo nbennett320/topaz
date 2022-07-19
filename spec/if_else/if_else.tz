@@ -5,6 +5,16 @@ if true {
 	print 'false'
 }
 
+# expect 'truth'
+if true and true {
+	print 'truth'
+} else {
+	print 'false'
+}
+
+# expect 'hello world'
+if 123 print 'hello world'
+
 # expect: false
 if false {
 	print 'truth'
