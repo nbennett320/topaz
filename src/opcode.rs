@@ -25,6 +25,8 @@ pub enum Opcode {
     SetGlobal,
     GetLocal,
     SetLocal,
+    JumpIfFalse,
+    Jump,
 
     Unknown,
 }
@@ -57,6 +59,8 @@ pub fn from_u8(x: u8) -> Opcode {
         23 => Opcode::SetGlobal,
         24 => Opcode::GetLocal,
         25 => Opcode::SetLocal,
+        26 => Opcode::JumpIfFalse,
+        27 => Opcode::Jump,
         _ => Opcode::Unknown,
     }
 }
