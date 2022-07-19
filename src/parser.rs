@@ -79,6 +79,10 @@ impl Parser {
                 self.advance();
                 self.if_statement();
             }
+            TokenType::While => {
+                self.advance();
+                self.while_statement();
+            }
             _ => self.expression_statement(),
         }
     }
@@ -115,25 +119,16 @@ impl Parser {
         self.patch_jump(else_offset);
     }
 
-    pub fn conditional(&mut self, val: bool) {
-        println!("executing conditional: {}", val);
-        println!(
-            "token_type: {}, current: {:?}",
-            TokenType::If,
-            self.current.token_type
-        );
-        self.consume(
-            TokenType::LeftParen,
-            "Expect expression to be evaluated as boolean",
-        );
+    fn while_statement(&mut self) {
+        let loop_start = self.chunk.code.len();
         self.expression();
-        self.consume(
-            TokenType::RightParen,
-            "Expect expression to be evaluated as boolean",
-        );
-        let then_jump = self.emit_jump(Opcode::JumpIfFalse);
+        let exit_offset = self.emit_jump(Opcode::JumpIfFalse);
+        self.emit_op(Opcode::Pop);
         self.statement();
-        self.patch_jump(then_jump);
+        self.emit_loop(loop_start);
+
+        self.patch_jump(exit_offset);
+        self.emit_op(Opcode::Pop);
     }
 
     pub fn advance(&mut self) {
@@ -218,6 +213,18 @@ impl Parser {
 
         self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
         self.chunk.code[offset + 1] = (jump & 0xff) as u8;
+    }
+
+    fn emit_loop(&mut self, loop_start: usize) {
+        self.emit_op(Opcode::Loop);
+
+        let offset = self.chunk.code.len() - loop_start + 2;
+        if offset as u16 > std::u16::MAX {
+            self.error("Loop offset is out of bounds");
+        }
+
+        self.emit_byte(((offset >> 8) & 0xff) as u8);
+        self.emit_byte((offset & 0xff) as u8);
     }
 
     fn make_constant(&mut self, value: Value) -> usize {
