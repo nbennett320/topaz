@@ -140,6 +140,10 @@ impl Vm {
                     let offset = self.read_short() as usize;
                     self.ip += offset;
                 }
+                Opcode::Loop => {
+                    let offset = self.read_short() as usize;
+                    self.ip -= offset;
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }

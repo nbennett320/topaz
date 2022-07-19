@@ -249,7 +249,7 @@ impl TokenType {
                 precedence: Precedence::None,
             },
             TokenType::If => &ParseRule {
-                prefix: Some(Parser::conditional),
+                prefix: None,
                 infix: None,
                 precedence: Precedence::None,
             },
