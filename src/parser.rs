@@ -101,17 +101,39 @@ impl Parser {
 
     fn if_statement(&mut self) {
         self.expression();
-        let offset = self.emit_jump(Opcode::JumpIfFalse);
+        let if_offset = self.emit_jump(Opcode::JumpIfFalse);
+        self.emit_op(Opcode::Pop);
         self.statement();
-        self.patch_jump(offset);
+
+        let else_offset = self.emit_jump(Opcode::Jump);
+        self.emit_op(Opcode::Pop);
+
+        self.patch_jump(if_offset);
+
+        // compile optional else clause
+        if self.matches(TokenType::Else) {
+            self.statement();
+        }
+
+        self.patch_jump(else_offset);
     }
 
     pub fn conditional(&mut self, val: bool) {
         println!("executing conditional: {}", val);
-        println!("token_type: {}, current: {:?}", TokenType::If, self.current.token_type);
-        self.consume(TokenType::LeftParen, "Expect expression to be evaluated as boolean");
+        println!(
+            "token_type: {}, current: {:?}",
+            TokenType::If,
+            self.current.token_type
+        );
+        self.consume(
+            TokenType::LeftParen,
+            "Expect expression to be evaluated as boolean",
+        );
         self.expression();
-        self.consume(TokenType::RightParen, "Expect expression to be evaluated as boolean");
+        self.consume(
+            TokenType::RightParen,
+            "Expect expression to be evaluated as boolean",
+        );
         let then_jump = self.emit_jump(Opcode::JumpIfFalse);
         self.statement();
         self.patch_jump(then_jump);
@@ -191,7 +213,7 @@ impl Parser {
     }
 
     fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.code.len() - 2;
+        let jump = self.chunk.code.len() - offset - 2;
 
         if jump > std::i16::MAX as usize {
             self.error("Jump is out of bounds");
