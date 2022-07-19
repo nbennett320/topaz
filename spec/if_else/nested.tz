@@ -1,0 +1,8 @@
+if 3 == 3 {
+	# expect: 3 equals 3
+	print '3 equals 3'
+	if true {
+		# expect: nested if
+		print 'nested if'
+	}
+}

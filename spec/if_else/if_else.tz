@@ -1,0 +1,16 @@
+# expect: truth
+if true {
+	print 'truth'
+} else {
+	print 'false'
+}
+
+# expect: false
+if false {
+	print 'truth'
+} else {
+	print 'false'
+}
+
+# expect: finally
+print 'finally'

@@ -1,0 +1,10 @@
+# expect: truth
+if true { print 'truth' }
+
+if false { print 'not truth' }
+
+# expect: mathematical
+if 3 + 4 == 7 { print 'mathematical' }
+
+# expect: finally
+print 'finally'

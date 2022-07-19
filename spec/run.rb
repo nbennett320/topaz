@@ -28,7 +28,7 @@ def run_file(file)
 end
 
 def read_expects(line)
-	expect_regex = /^# expect: (.*)$/
+	expect_regex = /^\W*# expect: (.*)$/
 	line.match(expect_regex) { |m| m[1] }
 end
 

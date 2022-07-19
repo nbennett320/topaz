@@ -1,0 +1,10 @@
+age = 20
+
+# expect: you can vote
+if age > 21 {
+	print 'you can drink'
+} else if age > 18 {
+	print 'you can vote'
+} else {
+	print "you can't really do anything"
+}
