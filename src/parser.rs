@@ -59,11 +59,6 @@ impl Parser {
     }
 
     fn declaration(&mut self) {
-        if let TokenType::Identifier(name) = self.current.token_type.clone() {
-            self.variable_definition(name);
-            return;
-        }
-
         self.statement();
     }
 
@@ -120,7 +115,7 @@ impl Parser {
 
     fn expression_statement(&mut self) {
         self.expression();
-        self.emit_op(Opcode::Pop);
+        // self.emit_op(Opcode::Pop);
     }
 
     fn block(&mut self) {
@@ -362,51 +357,29 @@ impl Parser {
     }
 
     pub fn variable(&mut self, can_assign: bool) {
-        if let TokenType::Identifier(name) = self.previous.token_type.clone() {
-            let (get_op, set_op, var) = match self.resolve_local(&self.previous) {
-                Ok(id) => (Opcode::GetLocal, Opcode::SetLocal, id),
-                Err(_) => (
-                    Opcode::GetGlobal,
-                    Opcode::SetGlobal,
-                    self.make_constant(Value::String(name)),
-                ),
-            };
-            if can_assign && self.matches(TokenType::Equal) {
-                self.expression();
-                self.emit_op(set_op);
-            } else {
-                self.emit_op(get_op);
-            }
-            self.emit_byte(var as u8);
-        }
-    }
-
-    fn variable_definition(&mut self, name: String) {
-        self.advance();
         let identifier = self.previous.clone();
-
-        if !self.matches(TokenType::Equal) {
-            unreachable!("Variable definition must be of the form [identifier = expression]");
-        }
-
-        self.expression();
-
-        // if current scope depth is 0 it must be a global variable
-        if self.scope_depth == 0 {
-            let global = self.make_constant(Value::String(name));
-            self.emit_op(Opcode::DefineGlobal);
-            self.emit_byte(global as u8);
-            return;
-        }
-
-        // otherwise check if the identifier has already been added to the local pool
-        let (set_op, constant) = match self.resolve_local(&identifier) {
-            Ok(id) => (Opcode::SetLocal, id),
-            Err(_) => (Opcode::SetGlobal, self.make_constant(Value::String(name))),
+        let name = match identifier.token_type.clone() {
+            TokenType::Identifier(name) => name,
+            _ => unreachable!("In variable() without name"),
         };
 
-        self.emit_op(set_op);
-        self.emit_byte(constant as u8);
+        let (get_op, set_op, constant) = match self.resolve_local(&identifier) {
+            Ok(id) => (Opcode::GetLocal, Opcode::SetLocal, id),
+            Err(_) => (
+                Opcode::GetGlobal,
+                Opcode::SetGlobal,
+                self.make_constant(Value::String(name)),
+            ),
+        };
+
+        if can_assign && self.matches(TokenType::Equal) {
+            self.expression();
+            self.emit_op(set_op);
+            self.emit_byte(constant as u8);
+        } else {
+            self.emit_op(get_op);
+            self.emit_byte(constant as u8);
+        }
     }
 
     fn add_local(&mut self, name: String) {
