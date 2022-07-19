@@ -5,7 +5,7 @@ fn is_digit(c: char) -> bool {
 }
 
 fn is_alpha(c: char) -> bool {
-    matches!(c,'a'..='z' | 'A'..='Z' | '_')
+    matches!(c, 'a'..='z' | 'A'..='Z' | '_')
 }
 
 pub struct Scanner {
@@ -45,7 +45,8 @@ impl Scanner {
             return None;
         }
 
-        match self.advance() {
+        let c = self.advance();
+        match c {
             '(' => Some(self.make_token(TokenType::LeftParen)),
             ')' => Some(self.make_token(TokenType::RightParen)),
             '{' => Some(self.make_token(TokenType::LeftBrace)),
@@ -106,7 +107,7 @@ impl Scanner {
                 };
                 Some(self.make_token(token_type))
             }
-            '\'' => Some(self.string()),
+            '\'' | '\"' => Some(self.string(c)),
             '0'..='9' => Some(self.number()),
             'a'..='z' | 'A'..='Z' | '_' => Some(self.identifier()),
             _ => None,
@@ -153,9 +154,10 @@ impl Scanner {
         }
     }
 
-    fn string(&mut self) -> Token {
+    fn string(&mut self, delimiter: char) -> Token {
+        assert!(delimiter == '\'' || delimiter == '\"');
         self.advance();
-        while self.peek() != '\'' && !self.eof() {
+        while self.peek() != delimiter && !self.eof() {
             if self.peek() == '\n' {
                 self.line += 1;
             }

@@ -1,0 +1,14 @@
+# single quote
+# expect: hello
+print 'hello'
+
+# double quote fine too
+# expect: world
+print "world"
+
+# concatenate single and double quoted strings
+a = "hello"
+b = 'world'
+
+# expect: hello world
+print a + ' ' + b
