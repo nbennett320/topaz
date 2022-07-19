@@ -220,8 +220,8 @@ impl TokenType {
             },
             TokenType::And => &ParseRule {
                 prefix: None,
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::binary),
+                precedence: Precedence::And,
             },
             TokenType::Class => &ParseRule {
                 prefix: None,

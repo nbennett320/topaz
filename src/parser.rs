@@ -271,6 +271,7 @@ impl Parser {
             TokenType::BitwiseOr => self.emit_op(Opcode::BitwiseOr),
             TokenType::LogicalAnd => self.emit_op(Opcode::LogicalAnd),
             TokenType::LogicalOr => self.emit_op(Opcode::LogicalOr),
+            TokenType::And => self.emit_op(Opcode::LogicalAnd),
             _ => (),
         }
     }
