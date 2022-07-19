@@ -56,11 +56,8 @@ impl Parser {
 
     fn declaration(&mut self) {
         if let TokenType::Identifier(name) = self.current.token_type.clone() {
-            self.advance();
-            if self.matches(TokenType::Equal) {
-                self.variable_definition(name);
-                return;
-            }
+            self.variable_definition(name);
+            return;
         }
 
         self.statement();
@@ -343,18 +340,31 @@ impl Parser {
     }
 
     fn variable_definition(&mut self, name: String) {
+        self.advance();
+        let identifier = self.previous.clone();
+
+        if !self.matches(TokenType::Equal) {
+            unreachable!("Variable definition must be of the form [identifier = expression]");
+        }
+
         self.expression();
 
-        // local variable
-        if self.scope_depth > 0 {
-            self.add_local(name);
-        }
-        // global variable
-        else {
+        // if current scope depth is 0 it must be a global variable
+        if self.scope_depth == 0 {
             let global = self.make_constant(Value::String(name));
             self.emit_op(Opcode::DefineGlobal);
             self.emit_byte(global as u8);
+            return;
         }
+
+        // otherwise check if the identifier has already been added to the local pool
+        let (set_op, constant) = match self.resolve_local(&identifier) {
+            Ok(id) => (Opcode::SetLocal, id),
+            Err(_) => (Opcode::SetGlobal, self.make_constant(Value::String(name))),
+        };
+
+        self.emit_op(set_op);
+        self.emit_byte(constant as u8);
     }
 
     fn add_local(&mut self, name: String) {
