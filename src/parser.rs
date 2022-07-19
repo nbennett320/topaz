@@ -249,7 +249,6 @@ impl Parser {
     fn print_statement(&mut self) {
         self.expression();
         self.emit_op(Opcode::Print);
-        println!();
     }
 
     fn matches(&mut self, token_type: TokenType) -> bool {

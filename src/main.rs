@@ -43,7 +43,6 @@ fn repl() {
 }
 
 fn run_file(fname: &str) {
-    println!("Running file {}", fname);
     let source =
         fs::read_to_string(fname).unwrap_or_else(|_| panic!("Unable to open file {}", fname));
 

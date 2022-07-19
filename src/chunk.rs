@@ -27,6 +27,11 @@ impl Chunk {
     }
 
     pub fn disassemble(&self, name: &str) {
+        // only disassemble in debug mode
+        if !cfg!(debug_assertions) {
+            return;
+        }
+
         println!("== {} ==", name);
 
         let mut offset = 0;
