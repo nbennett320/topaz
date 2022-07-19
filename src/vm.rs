@@ -80,9 +80,9 @@ impl Vm {
                 Opcode::Greater => self.binary_op(Operator::GreaterThan),
                 Opcode::Less => self.binary_op(Operator::LessThan),
                 Opcode::LogicalAnd => self.binary_op(Operator::AmpAmp),
-                Opcode::LogicalOr => self.binary_op(Operator::BarBar),
+                Opcode::LogicalOr => self.binary_op(Operator::PipePipe),
                 Opcode::BitwiseAnd => self.binary_op(Operator::Amp),
-                Opcode::BitwiseOr => self.binary_op(Operator::Bar),
+                Opcode::BitwiseOr => self.binary_op(Operator::Pipe),
                 Opcode::Print => {
                     print!("{}\n", self.pop());
                 }
@@ -210,7 +210,7 @@ impl Vm {
 
                         Value::Number((a.round() as i64 & b.round() as i64) as f64)
                     }
-                    Operator::Bar => {
+                    Operator::Pipe => {
                         let a_diff = (a - a.round()).abs();
                         let b_diff = (b - b.round()).abs();
 
@@ -221,7 +221,7 @@ impl Vm {
                         Value::Number((a.round() as i64 | b.round() as i64) as f64)
                     }
                     Operator::AmpAmp => Value::Bool(a != 0f64 && b != 0f64),
-                    Operator::BarBar => Value::Bool(a != 0f64 || b != 0f64),
+                    Operator::PipePipe => Value::Bool(a != 0f64 || b != 0f64),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
@@ -242,9 +242,9 @@ impl Vm {
                         Value::Nil
                     }
                     Operator::Amp => Value::Number((a as i64 & b.round() as i64) as f64),
-                    Operator::Bar => Value::Number((a as i64 | b.round() as i64) as f64),
+                    Operator::Pipe => Value::Number((a as i64 | b.round() as i64) as f64),
                     Operator::AmpAmp => Value::Bool(n && b != 0f64),
-                    Operator::BarBar => Value::Bool(n || b != 0f64),
+                    Operator::PipePipe => Value::Bool(n || b != 0f64),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
@@ -265,9 +265,9 @@ impl Vm {
                         Value::Nil
                     }
                     Operator::Amp => Value::Number((a.round() as i64 & b as i64) as f64),
-                    Operator::Bar => Value::Number((a.round() as i64 | b as i64) as f64),
+                    Operator::Pipe => Value::Number((a.round() as i64 | b as i64) as f64),
                     Operator::AmpAmp => Value::Bool(a != 0f64 && m),
-                    Operator::BarBar => Value::Bool(a != 0f64 || m),
+                    Operator::PipePipe => Value::Bool(a != 0f64 || m),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
@@ -288,9 +288,9 @@ impl Vm {
                         Value::Nil
                     }
                     Operator::Amp => Value::Number((a as i64 & b as i64) as f64),
-                    Operator::Bar => Value::Number((a as i64 | b as i64) as f64),
+                    Operator::Pipe => Value::Number((a as i64 | b as i64) as f64),
                     Operator::AmpAmp => Value::Bool(n && m),
-                    Operator::BarBar => Value::Bool(n || m),
+                    Operator::PipePipe => Value::Bool(n || m),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
@@ -310,7 +310,7 @@ impl Vm {
                         Value::Nil
                     }
                     Operator::AmpAmp => Value::Bool(a.len() > 0 && b.len() > 0),
-                    Operator::BarBar => Value::Bool(a.len() > 0 || b.len() > 0),
+                    Operator::PipePipe => Value::Bool(a.len() > 0 || b.len() > 0),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 

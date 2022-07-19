@@ -11,8 +11,8 @@ pub enum Operator {
   GreaterThan,
   Amp,
   AmpAmp,
-  Bar,
-  BarBar
+  Pipe,
+  PipePipe
 }
 
 impl Display for Operator {
@@ -27,8 +27,8 @@ impl Display for Operator {
         Operator::GreaterThan => write!(f, ">"),
         Operator::Amp => write!(f, "&"),
         Operator::AmpAmp => write!(f, "&&"),
-        Operator::Bar => write!(f, "|"),
-        Operator::BarBar => write!(f, "||"),
+        Operator::Pipe => write!(f, "|"),
+        Operator::PipePipe => write!(f, "||"),
       }
     }
 }
@@ -45,8 +45,8 @@ impl Operator {
       ">" => Some(Operator::GreaterThan),
       "&" => Some(Operator::Amp),
       "&&" => Some(Operator::AmpAmp),
-      "|" => Some(Operator::Bar),
-      "||" => Some(Operator::BarBar),
+      "|" => Some(Operator::Pipe),
+      "||" => Some(Operator::PipePipe),
       _ => None
     }
   }
@@ -62,8 +62,8 @@ impl Operator {
       Operator::GreaterThan => ">",
       Operator::Amp => "&",
       Operator::AmpAmp => "&&",
-      Operator::Bar => "|",
-      Operator::BarBar => "||",
+      Operator::Pipe => "|",
+      Operator::PipePipe => "||",
     }
   }
 }
