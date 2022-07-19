@@ -25,4 +25,8 @@ impl Function {
             function_type,
         }
     }
+
+    pub fn add_param(&mut self) {
+        self.num_params += 1;
+    }
 }

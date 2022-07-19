@@ -50,6 +50,7 @@ impl Parser {
             self.declaration();
         }
 
+        self.emit_constant(Value::Nil);
         self.emit_op(Opcode::Return);
         Ok(self.functions[0].clone())
     }
@@ -92,30 +93,44 @@ impl Parser {
 
     fn function_definition(&mut self) {
         if let TokenType::Identifier(name) = self.current.token_type.clone() {
+            let f = Function::new(name.clone(), FunctionType::Fn);
+            self.functions.push(f);
             self.advance();
-            self.function();
-            let global = self.make_constant(Value::String(name));
+
+            // begin function definition
+            self.begin_scope();
+            self.consume(TokenType::LeftParen, "Expect '(' after function name");
+
+            while !self.matches(TokenType::RightParen) {
+                self.advance();
+
+                if let TokenType::Identifier(name) = self.current.token_type.clone() {
+                } else {
+                    panic!("nooo");
+                }
+            }
+            //self.consume(
+            //    TokenType::RightParen,
+            //    "Expect ')' after function parameters",
+            //);
+            self.consume(TokenType::LeftBrace, "Expect '{' before function body");
+
+            self.block();
+            self.emit_constant(Value::Nil);
+            self.emit_op(Opcode::Return);
+
+            // end function definition
+
+            let f = self.functions.pop().unwrap();
+            let global = self.make_constant(Value::Function(f));
             self.emit_op(Opcode::DefineGlobal);
             self.emit_byte(global as u8);
         }
     }
 
-    fn function(&mut self) {
-        self.begin_scope();
-        self.consume(TokenType::LeftParen, "Expect '(' after function name");
-        self.consume(
-            TokenType::RightParen,
-            "Expect ')' after function parameters",
-        );
-        self.consume(TokenType::LeftBrace, "Expect '{' before function body");
-
-        self.block();
-        println!("hi");
-    }
-
     fn expression_statement(&mut self) {
         self.expression();
-        // self.emit_op(Opcode::Pop);
+        //self.emit_op(Opcode::Pop);
     }
 
     fn block(&mut self) {
@@ -146,7 +161,7 @@ impl Parser {
     }
 
     fn while_statement(&mut self) {
-        let loop_start = self.chunk.code.len();
+        let loop_start = self.functions.last_mut().unwrap().chunk.code.len();
         self.expression();
         let exit_offset = self.emit_jump(Opcode::JumpIfFalse);
         self.emit_op(Opcode::Pop);
@@ -231,24 +246,24 @@ impl Parser {
     fn emit_jump(&mut self, op: Opcode) -> usize {
         self.emit_byte(op as u8);
         self.emit_bytes(0xff, 0xff);
-        self.chunk.code.len() - 2
+        self.functions.last_mut().unwrap().chunk.code.len() - 2
     }
 
     fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.code.len() - offset - 2;
+        let jump = self.functions.last_mut().unwrap().chunk.code.len() - offset - 2;
 
         if jump > std::i16::MAX as usize {
             self.error("Jump is out of bounds");
         }
 
-        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
-        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
+        self.functions.last_mut().unwrap().chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
+        self.functions.last_mut().unwrap().chunk.code[offset + 1] = (jump & 0xff) as u8;
     }
 
     fn emit_loop(&mut self, loop_start: usize) {
         self.emit_op(Opcode::Loop);
 
-        let offset = self.chunk.code.len() - loop_start + 2;
+        let offset = self.functions.last_mut().unwrap().chunk.code.len() - loop_start + 2;
         if offset as u16 > std::u16::MAX {
             self.error("Loop offset is out of bounds");
         }
@@ -281,6 +296,12 @@ impl Parser {
             TokenType::Bang => self.emit_op(Opcode::Not),
             _ => unreachable!("Impossible unary operator"),
         }
+    }
+
+    pub fn call(&mut self, _can_assign: bool) {
+        self.consume(TokenType::RightParen, "Expect ')' after arguments.");
+        self.emit_op(Opcode::Call);
+        self.emit_byte(0);
     }
 
     pub fn binary(&mut self, _can_assign: bool) {

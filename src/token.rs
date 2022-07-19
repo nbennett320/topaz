@@ -85,8 +85,8 @@ impl TokenType {
         match self {
             TokenType::LeftParen => &ParseRule {
                 prefix: Some(Parser::grouping),
-                infix: None,
-                precedence: Precedence::None,
+                infix: Some(Parser::call),
+                precedence: Precedence::Call,
             },
             TokenType::RightParen => &ParseRule {
                 prefix: None,
@@ -354,7 +354,7 @@ impl Display for TokenType {
             TokenType::Var => write!(f, "Var"),
             TokenType::While => write!(f, "While"),
             TokenType::Error(_) => write!(f, "Error"),
-            _ => write!(f, "Undefined Token!")
+            _ => write!(f, "Undefined Token!"),
         }
     }
 }
