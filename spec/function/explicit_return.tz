@@ -1,0 +1,18 @@
+# return the result of an expression
+fn ret_num() {
+	return 42
+	"shouldn't return this string"
+}
+
+# return without expression results in nil
+fn ret_nil() {
+	return
+	"this isn't returned either"
+}
+
+# expect: 42
+print ret_num()
+
+# TODO: expect: nil
+# interpret \n after return as meaningful
+# print ret_nil()

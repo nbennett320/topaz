@@ -1,3 +1,4 @@
+# functions implicitly return nil
 fn f() { }
 
 # expect: nil

@@ -62,10 +62,16 @@ impl Vm {
             match from_u8(instruction) {
                 Opcode::Return => {
                     let result = self.pop();
-                    self.frames.pop();
+                    let frame = self.frames.pop().unwrap();
 
                     if self.frames.is_empty() {
                         return Ok(result);
+                    }
+
+                    // return caller's stack to how it was before function call
+                    let diff = self.stack.len() - frame.base + 1;
+                    for _ in 0..diff {
+                        self.pop();
                     }
 
                     self.push(result);

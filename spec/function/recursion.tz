@@ -1,0 +1,29 @@
+fn fib(x) {
+	if x < 2 {
+		x
+	} else {
+		fib(x - 1) + fib(x - 2)
+	}
+}
+
+# [0, 1, 1, 2, 3, 5, 8, 13, 21]
+# expect: 21
+print fib(8)
+
+fn count_down(y) {
+	if x == 0 {
+		print 'blast off!'
+		return nil
+	}
+
+	print x
+	count_down(x - 1)
+}
+
+# expect: 5
+# expect: 4
+# expect: 3
+# expect: 2
+# expect: 1
+# expect: blast off!
+count_down(5)

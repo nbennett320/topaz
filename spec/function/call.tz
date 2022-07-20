@@ -2,5 +2,15 @@ fn f() {
 	print 'inside function'
 }
 
+fn x() {
+	42
+}
+
 # expect: inside function
 f()
+
+# assign a function's return value to a variable
+result = x()
+
+# expect: 42
+print result

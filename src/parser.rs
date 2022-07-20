@@ -86,6 +86,10 @@ impl Parser {
                 self.advance();
                 self.function_definition();
             }
+            TokenType::Return => {
+                self.advance();
+                self.return_statement();
+            }
             _ => self.expression_statement(),
         }
     }
@@ -177,6 +181,12 @@ impl Parser {
 
         self.patch_jump(exit_offset);
         self.emit_op(Opcode::Pop);
+    }
+
+    fn return_statement(&mut self) {
+        // TODO: don't parse expression if return is followed immediately by \n
+        self.expression();
+        self.emit_op(Opcode::Return);
     }
 
     pub fn advance(&mut self) {
