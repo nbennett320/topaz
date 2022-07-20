@@ -96,7 +96,7 @@ impl Chunk {
     fn constant_instruction(&self, name: &str, offset: usize) -> usize {
         let constant = self.code[offset + 1] as usize;
         print!("{} {} ", name, constant);
-        print!("{}\n", self.constants[constant]);
+        println!("{}", self.constants[constant]);
         offset + 2
     }
 

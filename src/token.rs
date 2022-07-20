@@ -354,7 +354,6 @@ impl Display for TokenType {
             TokenType::Var => write!(f, "Var"),
             TokenType::While => write!(f, "While"),
             TokenType::Error(_) => write!(f, "Error"),
-            _ => write!(f, "Undefined Token!"),
         }
     }
 }

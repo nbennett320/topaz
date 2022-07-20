@@ -112,7 +112,7 @@ impl Vm {
                 Opcode::BitwiseAnd => self.binary_op(Operator::Amp),
                 Opcode::BitwiseOr => self.binary_op(Operator::Pipe),
                 Opcode::Print => {
-                    print!("{}\n", self.peek(0));
+                    println!("{}", self.peek(0));
                 }
                 Opcode::Pop => {
                     self.pop();
@@ -202,7 +202,7 @@ impl Vm {
     }
 
     fn read_byte(&mut self) -> u8 {
-        let mut ip = self.frames.last_mut().unwrap().ip;
+        let ip = self.frames.last_mut().unwrap().ip;
         let byte = self.frames.last_mut().unwrap().function.chunk.code[ip];
         self.frames.last_mut().unwrap().ip += 1;
         byte
@@ -270,7 +270,6 @@ impl Vm {
                     }
                     Operator::AmpAmp => Value::Bool(a != 0f64 && b != 0f64),
                     Operator::PipePipe => Value::Bool(a != 0f64 || b != 0f64),
-                    _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
                 self.push(result)
@@ -279,12 +278,12 @@ impl Vm {
                 let (a, b) = (1f64, m);
 
                 let result = match op {
-                    Operator::Plus 
-                    | Operator::Minus 
+                    Operator::Plus
+                    | Operator::Minus
                     | Operator::Star
-                    | Operator::Slash 
-                    | Operator::Mod 
-                    | Operator::GreaterThan 
+                    | Operator::Slash
+                    | Operator::Mod
+                    | Operator::GreaterThan
                     | Operator::LessThan => {
                         self.runtime_error("operands must be numbers");
                         Value::Nil
@@ -293,7 +292,6 @@ impl Vm {
                     Operator::Pipe => Value::Number((a as i64 | b.round() as i64) as f64),
                     Operator::AmpAmp => Value::Bool(n && b != 0f64),
                     Operator::PipePipe => Value::Bool(n || b != 0f64),
-                    _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
                 self.push(result)
@@ -302,12 +300,12 @@ impl Vm {
                 let (a, b) = (n, 1f64);
 
                 let result = match op {
-                    Operator::Plus 
-                    | Operator::Minus 
+                    Operator::Plus
+                    | Operator::Minus
                     | Operator::Star
-                    | Operator::Slash 
-                    | Operator::Mod 
-                    | Operator::GreaterThan 
+                    | Operator::Slash
+                    | Operator::Mod
+                    | Operator::GreaterThan
                     | Operator::LessThan => {
                         self.runtime_error("operands must be numbers");
                         Value::Nil
@@ -316,7 +314,6 @@ impl Vm {
                     Operator::Pipe => Value::Number((a.round() as i64 | b as i64) as f64),
                     Operator::AmpAmp => Value::Bool(a != 0f64 && m),
                     Operator::PipePipe => Value::Bool(a != 0f64 || m),
-                    _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
                 self.push(result)
@@ -325,12 +322,12 @@ impl Vm {
                 let (a, b) = (1f64, 1f64);
 
                 let result = match op {
-                    Operator::Plus 
-                    | Operator::Minus 
+                    Operator::Plus
+                    | Operator::Minus
                     | Operator::Star
-                    | Operator::Slash 
-                    | Operator::Mod 
-                    | Operator::GreaterThan 
+                    | Operator::Slash
+                    | Operator::Mod
+                    | Operator::GreaterThan
                     | Operator::LessThan => {
                         self.runtime_error("operands must be numbers");
                         Value::Nil
@@ -339,7 +336,6 @@ impl Vm {
                     Operator::Pipe => Value::Number((a as i64 | b as i64) as f64),
                     Operator::AmpAmp => Value::Bool(n && m),
                     Operator::PipePipe => Value::Bool(n || m),
-                    _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
                 self.push(result)
@@ -347,18 +343,18 @@ impl Vm {
             (Value::String(a), Value::String(b)) => {
                 let result: Value = match op {
                     Operator::Plus => Value::String(format!("{}{}", a, b)),
-                    Operator::Minus 
+                    Operator::Minus
                     | Operator::Star
-                    | Operator::Slash 
-                    | Operator::Mod 
-                    | Operator::GreaterThan 
+                    | Operator::Slash
+                    | Operator::Mod
+                    | Operator::GreaterThan
                     | Operator::LessThan => {
                         let msg = format!("no {} operation on string '{}' and '{}'", op, a, b);
                         self.runtime_error(&msg);
                         Value::Nil
                     }
-                    Operator::AmpAmp => Value::Bool(a.len() > 0 && b.len() > 0),
-                    Operator::PipePipe => Value::Bool(a.len() > 0 || b.len() > 0),
+                    Operator::AmpAmp => Value::Bool(!a.is_empty() && !b.is_empty()),
+                    Operator::PipePipe => Value::Bool(!a.is_empty() && !b.is_empty()),
                     _ => unreachable!("binary_op: invalid op {}", op),
                 };
 
