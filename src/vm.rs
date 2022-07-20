@@ -22,8 +22,12 @@ struct CallFrame {
 }
 
 impl CallFrame {
-    pub fn new(function: Function, ip: usize, base: usize) -> CallFrame {
-        CallFrame { function, ip, base }
+    pub fn new(function: Function, base: usize) -> CallFrame {
+        CallFrame {
+            function,
+            ip: 0,
+            base,
+        }
     }
 }
 
@@ -38,7 +42,7 @@ impl Vm {
 
     pub fn run(&mut self, function: Function) -> Result<(), InterpretError> {
         // push "stack frame" of top level script onto stack
-        let cf = CallFrame::new(function, 0, 0);
+        let cf = CallFrame::new(function, 0);
         self.frames.push(cf);
 
         loop {
@@ -169,13 +173,15 @@ impl Vm {
                 }
                 Opcode::Call => {
                     let num_args = self.read_byte() as usize;
-                    let function = self.pop();
+                    let function = self.peek(num_args);
                     let f = match function {
                         Value::Function(f) => f,
-                        _ => return Err(InterpretError::RuntimeError),
+                        _ => {
+                            return Err(InterpretError::RuntimeError);
+                        }
                     };
 
-                    let cf = CallFrame::new(f, 0, 0);
+                    let cf = CallFrame::new(f.clone(), self.stack.len() - num_args);
                     self.frames.push(cf);
                 }
                 _ => return Err(InterpretError::CompileError),

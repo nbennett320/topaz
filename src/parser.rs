@@ -92,40 +92,44 @@ impl Parser {
     }
 
     fn function_definition(&mut self) {
-        if let TokenType::Identifier(name) = self.current.token_type.clone() {
-            let f = Function::new(name.clone(), FunctionType::Fn);
-            self.functions.push(f);
-            self.advance();
+        let function_name = match self.current.token_type.clone() {
+            TokenType::Identifier(name) => name,
+            _ => unreachable!("Not given an identifier in function_definition"),
+        };
 
-            // begin function definition
-            self.begin_scope();
-            self.consume(TokenType::LeftParen, "Expect '(' after function name");
+        let f = Function::new(function_name, FunctionType::Fn);
+        self.functions.push(f);
 
-            while !self.matches(TokenType::RightParen) {
-                self.advance();
+        self.advance();
 
-                if let TokenType::Identifier(name) = self.current.token_type.clone() {
-                } else {
-                    panic!("nooo");
-                }
+        self.begin_scope();
+        self.consume(TokenType::LeftParen, "Expect '(' after function name");
+
+        let mut num_params = 0;
+        while !self.matches(TokenType::RightParen) {
+            num_params += 1;
+            match self.current.token_type.clone() {
+                TokenType::Identifier(name) => self.add_local(name),
+                _ => panic!("Expect identifier"),
             }
-            //self.consume(
-            //    TokenType::RightParen,
-            //    "Expect ')' after function parameters",
-            //);
-            self.consume(TokenType::LeftBrace, "Expect '{' before function body");
-
-            self.block();
-            self.emit_constant(Value::Nil);
-            self.emit_op(Opcode::Return);
-
-            // end function definition
-
-            let f = self.functions.pop().unwrap();
-            let global = self.make_constant(Value::Function(f));
-            self.emit_op(Opcode::DefineGlobal);
-            self.emit_byte(global as u8);
+            self.advance();
         }
+
+        let mut f = self.functions.pop().unwrap();
+        f.num_params = num_params;
+        self.functions.push(f);
+
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body");
+
+        self.block();
+        self.emit_constant(Value::Nil);
+        self.emit_op(Opcode::Return);
+
+        let f = self.functions.pop().unwrap();
+        f.chunk.disassemble(&f.name);
+        let global = self.make_constant(Value::Function(f));
+        self.emit_op(Opcode::DefineGlobal);
+        self.emit_byte(global as u8);
     }
 
     fn expression_statement(&mut self) {
@@ -299,9 +303,21 @@ impl Parser {
     }
 
     pub fn call(&mut self, _can_assign: bool) {
-        self.consume(TokenType::RightParen, "Expect ')' after arguments.");
+        let mut num_params = 0;
+
+        if self.current.token_type.clone() != TokenType::RightParen {
+            while {
+                num_params += 1;
+                self.expression();
+
+                self.matches(TokenType::Comma)
+            } {}
+        }
+
+        self.consume(TokenType::RightParen, "Expected ) after arguments");
+
         self.emit_op(Opcode::Call);
-        self.emit_byte(0);
+        self.emit_byte(num_params);
     }
 
     pub fn binary(&mut self, _can_assign: bool) {
