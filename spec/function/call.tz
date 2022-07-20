@@ -1,0 +1,6 @@
+fn f() {
+	print 'inside function'
+}
+
+# expect: inside function
+f()

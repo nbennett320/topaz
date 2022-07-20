@@ -1,0 +1,6 @@
+fn f(a b) {
+	print a + b
+}
+
+# expect: 5
+f(2, 3)

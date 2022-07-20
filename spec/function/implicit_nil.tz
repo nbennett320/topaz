@@ -1,0 +1,4 @@
+fn f() { }
+
+# expect: nil
+print f()
