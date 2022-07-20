@@ -1,5 +1,5 @@
 use crate::function::Function;
-use crate::opcode::{from_u8, Opcode};
+use crate::opcode::Opcode;
 use crate::operator::Operator;
 use crate::value::Value;
 
@@ -59,7 +59,7 @@ impl Vm {
             }
 
             let instruction = self.read_byte();
-            match from_u8(instruction) {
+            match Opcode::from(instruction) {
                 Opcode::Return => {
                     let result = self.pop();
                     let frame = self.frames.pop().unwrap();

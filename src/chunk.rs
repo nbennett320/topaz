@@ -1,4 +1,4 @@
-use crate::opcode::{from_u8, Opcode};
+use crate::opcode::Opcode;
 use crate::value::Value;
 
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ impl Chunk {
         }
 
         let instruction = self.code[offset];
-        match from_u8(instruction) {
+        match Opcode::from(instruction) {
             Opcode::Return => self.simple_instruction("Return", offset),
             Opcode::Constant => self.constant_instruction("Constant", offset),
             Opcode::Negate => self.simple_instruction("Negate", offset),
