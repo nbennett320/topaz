@@ -28,6 +28,7 @@ pub enum Opcode {
     Jump,
     Loop,
     Call,
+    BuildArray,
 
     Unknown,
 }
@@ -64,6 +65,7 @@ impl Opcode {
             26 => Opcode::Jump,
             27 => Opcode::Loop,
             28 => Opcode::Call,
+            29 => Opcode::BuildArray,
             _ => Opcode::Unknown,
         }
     }

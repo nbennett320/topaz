@@ -180,6 +180,18 @@ impl Vm {
                     let cf = CallFrame::new(f.clone(), self.stack.len() - num_args);
                     self.frames.push(cf);
                 }
+                Opcode::BuildArray => {
+                    let num_elements = self.read_byte();
+                    let mut array: Vec<Value> = Vec::new();
+                    for _ in 0..num_elements {
+                        let value = self.pop();
+                        array.push(value);
+                    }
+
+                    // reverse because elements are pushed off the stack in the reverse order they appear in the array
+                    array.reverse();
+                    self.push(Value::Array(array));
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }

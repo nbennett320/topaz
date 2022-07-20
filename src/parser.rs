@@ -214,6 +214,21 @@ impl Parser {
         }
     }
 
+    pub fn array(&mut self, _can_assign: bool) {
+        let mut num_elements = 0;
+        if self.current.token_type.clone() != TokenType::RightBracket {
+            while {
+                num_elements += 1;
+                self.expression();
+                self.matches(TokenType::Comma)
+            } {}
+        }
+
+        self.consume(TokenType::RightBracket, "Expect ']' after array");
+        self.emit_op(Opcode::BuildArray);
+        self.emit_byte(num_elements);
+    }
+
     fn error(&mut self, msg: &str) {
         self.error_at(self.previous.clone(), msg);
     }

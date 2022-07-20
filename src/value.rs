@@ -8,6 +8,7 @@ pub enum Value {
     Number(f64),
     String(String),
     Function(Function),
+    Array(Vec<Value>),
 }
 
 impl From<i64> for Value {
@@ -29,6 +30,17 @@ impl Display for Value {
                 } else {
                     write!(f, "<fn {}>", func.name)
                 }
+            }
+            Value::Array(array) => {
+                write!(f, "[").ok();
+                for i in 0..array.len() {
+                    write!(f, "{}", array[i]).ok();
+                    if i != array.len() - 1 {
+                        write!(f, ", ").ok();
+                    }
+                }
+                write!(f, "]").ok();
+                Ok(())
             }
         }
     }
