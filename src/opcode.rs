@@ -28,6 +28,7 @@ pub enum Opcode {
     JumpIfFalse,
     Jump,
     Loop,
+    Call,
 
     Unknown,
 }
@@ -63,6 +64,7 @@ pub fn from_u8(x: u8) -> Opcode {
         26 => Opcode::JumpIfFalse,
         27 => Opcode::Jump,
         28 => Opcode::Loop,
+        29 => Opcode::Call,
         _ => Opcode::Unknown,
     }
 }

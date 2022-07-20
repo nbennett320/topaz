@@ -1,6 +1,7 @@
 use crate::opcode::{from_u8, Opcode};
 use crate::value::Value;
 
+#[derive(Debug, Clone)]
 pub struct Chunk {
     pub code: Vec<u8>,
     pub constants: Vec<Value>,
@@ -79,6 +80,7 @@ impl Chunk {
             Opcode::JumpIfFalse => self.jump_instruction("JumpIfFalse", 1, offset),
             Opcode::Jump => self.jump_instruction("Jump", 1, offset),
             Opcode::Loop => self.jump_instruction("Loop", -1, offset),
+            Opcode::Call => self.byte_instruction("Call", offset),
             _ => {
                 println!("Unknown opcode: {}", instruction);
                 offset + 1
@@ -108,7 +110,12 @@ impl Chunk {
         let mut jump = (self.code[offset + 1] as u16) << 8;
         jump |= self.code[offset + 2] as u16;
         let to = sign * (jump as i32);
-        println!("{} {} -> {}", name, offset, ((offset as i64) + 3 + to as i64) as i64);
+        println!(
+            "{} {} -> {}",
+            name,
+            offset,
+            ((offset as i64) + 3 + to as i64) as i64
+        );
         offset + 3
     }
 }

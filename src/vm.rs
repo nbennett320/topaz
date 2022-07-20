@@ -1,4 +1,4 @@
-use crate::chunk::Chunk;
+use crate::function::Function;
 use crate::opcode::{from_u8, Opcode};
 use crate::value::Value;
 use crate::operator::Operator;
@@ -6,10 +6,9 @@ use crate::operator::Operator;
 use std::collections::HashMap;
 
 pub struct Vm {
-    ip: usize,
-    chunk: Chunk,
     stack: Vec<Value>,
     globals: HashMap<String, Value>,
+    frames: Vec<CallFrame>,
 }
 
 pub enum InterpretError {
@@ -17,18 +16,36 @@ pub enum InterpretError {
     RuntimeError,
 }
 
+struct CallFrame {
+    function: Function,
+    ip: usize,   // ip of caller to return to
+    base: usize, // index of base of stack
+}
+
+impl CallFrame {
+    pub fn new(function: Function, base: usize) -> CallFrame {
+        CallFrame {
+            function,
+            ip: 0,
+            base,
+        }
+    }
+}
+
 impl Vm {
     pub fn new() -> Vm {
         Vm {
-            ip: 0,
-            chunk: Chunk::new(),
             stack: Vec::new(),
             globals: HashMap::new(),
+            frames: Vec::new(),
         }
     }
 
-    pub fn run(&mut self, chunk: Chunk) -> Result<(), InterpretError> {
-        self.chunk = chunk;
+    pub fn run(&mut self, function: Function) -> Result<(), InterpretError> {
+        // push "stack frame" of top level script onto stack
+        let cf = CallFrame::new(function, 0);
+        self.frames.push(cf);
+
         loop {
             // debug information
             if cfg!(debug_assertions) {
@@ -44,9 +61,14 @@ impl Vm {
             let instruction = self.read_byte();
             match from_u8(instruction) {
                 Opcode::Return => {
-                    //self.pop().print();
-                    //println!();
-                    break;
+                    let result = self.pop();
+                    self.frames.pop();
+
+                    if self.frames.is_empty() {
+                        return Ok(());
+                    }
+
+                    self.push(result);
                 }
                 Opcode::Constant => {
                     let constant = self.read_constant();
@@ -94,6 +116,9 @@ impl Vm {
                     if let Value::String(name) = constant {
                         self.globals.insert(name, self.peek(0).clone());
                         self.pop();
+                    } else if let Value::Function(f) = constant {
+                        self.globals
+                            .insert(f.name.clone(), Value::Function(f.clone()));
                     } else {
                         unreachable!("Did not receive a String in DefineGlobal")
                     }
@@ -124,57 +149,72 @@ impl Vm {
                     }
                 }
                 Opcode::GetLocal => {
+                    let base = self.frames.last_mut().unwrap().base;
                     let slot = self.read_byte() as usize;
-                    self.push(self.stack[slot].clone());
+                    self.push(self.stack[base + slot].clone());
                 }
                 Opcode::SetLocal => {
+                    let base = self.frames.last_mut().unwrap().base;
                     let slot = self.read_byte() as usize;
-                    self.stack[slot] = self.peek(0).clone();
+                    self.stack[base + slot] = self.peek(0).clone();
                 }
                 Opcode::JumpIfFalse => {
                     let offset = self.read_short() as usize;
                     if self.peek(0).is_falsey() {
-                        self.ip += offset;
+                        self.frames.last_mut().unwrap().ip += offset;
                     }
                 }
                 Opcode::Jump => {
                     let offset = self.read_short() as usize;
-                    self.ip += offset;
+                    self.frames.last_mut().unwrap().ip += offset;
                 }
                 Opcode::Loop => {
                     let offset = self.read_short() as usize;
-                    self.ip -= offset;
+                    self.frames.last_mut().unwrap().ip -= offset;
+                }
+                Opcode::Call => {
+                    let num_args = self.read_byte() as usize;
+                    let function = self.peek(num_args);
+                    let f = match function {
+                        Value::Function(f) => f,
+                        _ => {
+                            return Err(InterpretError::RuntimeError);
+                        }
+                    };
+
+                    let cf = CallFrame::new(f.clone(), self.stack.len() - num_args);
+                    self.frames.push(cf);
                 }
                 _ => return Err(InterpretError::CompileError),
             };
         }
-
-        self.ip = 0;
-        Ok(())
     }
 
     fn runtime_error(&mut self, msg: &str) -> InterpretError {
-        let line = self.chunk.lines[self.ip - 1];
+        let ip = self.frames.last_mut().unwrap().ip;
+        let line = self.frames.last_mut().unwrap().function.chunk.lines[ip - 1];
         println!("{} [line {}]", msg, line);
         InterpretError::RuntimeError
     }
 
     fn read_byte(&mut self) -> u8 {
-        let byte = self.chunk.code[self.ip];
-        self.ip += 1;
+        let mut ip = self.frames.last_mut().unwrap().ip;
+        let byte = self.frames.last_mut().unwrap().function.chunk.code[ip];
+        self.frames.last_mut().unwrap().ip += 1;
         byte
     }
 
     fn read_short(&mut self) -> u16 {
-        let rs = &self.chunk.code[self.ip..=self.ip + 1];
+        let ip = self.frames.last_mut().unwrap().ip;
+        let rs = &self.frames.last_mut().unwrap().function.chunk.code[ip..=ip + 1];
         let short: u16 = ((rs[0] as u16) << 8) | rs[1] as u16;
-        self.ip += 2;
+        self.frames.last_mut().unwrap().ip += 2;
         short
     }
 
     fn read_constant(&mut self) -> Value {
         let byte = self.read_byte();
-        self.chunk.constants[byte as usize].clone()
+        self.frames.last_mut().unwrap().function.chunk.constants[byte as usize].clone()
     }
 
     fn push(&mut self, value: Value) {

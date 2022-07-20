@@ -1,3 +1,4 @@
+use crate::function::Function;
 use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug, Clone)]
@@ -6,6 +7,7 @@ pub enum Value {
     Nil,
     Number(f64),
     String(String),
+    Function(Function),
 }
 
 impl From<i64> for Value {
@@ -21,6 +23,13 @@ impl Display for Value {
             Value::Number(x) => write!(f, "{}", x),
             Value::Nil => write!(f, "nil"),
             Value::String(s) => write!(f, "{}", s),
+            Value::Function(func) => {
+                if func.native {
+                    write!(f, "<native fn>")
+                } else {
+                    write!(f, "<fn {}>", func.name)
+                }
+            }
         }
     }
 }

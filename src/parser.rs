@@ -1,16 +1,16 @@
+use crate::function::{Function, FunctionType};
 use crate::opcode::Opcode;
 use crate::precedence::Precedence;
 use crate::token::{Token, TokenType};
 use crate::value::Value;
 use crate::vm::InterpretError;
-use crate::Chunk;
 use crate::Scanner;
 
 pub struct Parser {
     current: Token,
     previous: Token,
     scanner: Scanner,
-    chunk: Chunk,
+    functions: Vec<Function>,
     locals: Vec<Local>,
     had_error: bool,
     end_flag: bool,
@@ -30,7 +30,7 @@ impl Parser {
             current: Token::new(TokenType::Error(String::from("current token")), 0, 0, 0),
             previous: Token::new(TokenType::Error(String::from("current token")), 0, 0, 0),
             scanner: Scanner::new(source),
-            chunk: Chunk::new(),
+            functions: Vec::new(),
             locals: Vec::new(),
             had_error: false,
             end_flag: false,
@@ -39,15 +39,20 @@ impl Parser {
         }
     }
 
-    pub fn compile(mut self) -> Result<Chunk, InterpretError> {
+    pub fn compile(mut self) -> Result<Function, InterpretError> {
+        // add top level functions to function stack
+        self.functions
+            .push(Function::new(String::new(), FunctionType::Script));
+
         self.advance();
 
         while !self.end_flag {
             self.declaration();
         }
 
+        self.emit_constant(Value::Nil);
         self.emit_op(Opcode::Return);
-        Ok(self.chunk)
+        Ok(self.functions[0].clone())
     }
 
     fn expression(&mut self) {
@@ -55,11 +60,6 @@ impl Parser {
     }
 
     fn declaration(&mut self) {
-        if let TokenType::Identifier(name) = self.current.token_type.clone() {
-            self.variable_definition(name);
-            return;
-        }
-
         self.statement();
     }
 
@@ -83,13 +83,58 @@ impl Parser {
                 self.advance();
                 self.while_statement();
             }
+            TokenType::Fn => {
+                self.advance();
+                self.function_definition();
+            }
             _ => self.expression_statement(),
         }
     }
 
+    fn function_definition(&mut self) {
+        let function_name = match self.current.token_type.clone() {
+            TokenType::Identifier(name) => name,
+            _ => unreachable!("Not given an identifier in function_definition"),
+        };
+
+        let f = Function::new(function_name, FunctionType::Fn);
+        self.functions.push(f);
+
+        self.advance();
+
+        self.begin_scope();
+        self.consume(TokenType::LeftParen, "Expect '(' after function name");
+
+        let mut num_params = 0;
+        while !self.matches(TokenType::RightParen) {
+            num_params += 1;
+            match self.current.token_type.clone() {
+                TokenType::Identifier(name) => self.add_local(name),
+                _ => panic!("Expect identifier"),
+            }
+            self.advance();
+        }
+
+        let mut f = self.functions.pop().unwrap();
+        f.num_params = num_params;
+        self.functions.push(f);
+
+        self.consume(TokenType::LeftBrace, "Expect '{' before function body");
+
+        self.block();
+        self.emit_constant(Value::Nil);
+        self.emit_op(Opcode::Return);
+
+        let f = self.functions.pop().unwrap();
+        f.chunk.disassemble(&f.name);
+        let global = self.make_constant(Value::Function(f));
+        self.emit_op(Opcode::DefineGlobal);
+        self.emit_byte(global as u8);
+    }
+
     fn expression_statement(&mut self) {
         self.expression();
-        self.emit_op(Opcode::Pop);
+        //self.emit_op(Opcode::Pop);
     }
 
     fn block(&mut self) {
@@ -120,7 +165,7 @@ impl Parser {
     }
 
     fn while_statement(&mut self) {
-        let loop_start = self.chunk.code.len();
+        let loop_start = self.functions.last_mut().unwrap().chunk.code.len();
         self.expression();
         let exit_offset = self.emit_jump(Opcode::JumpIfFalse);
         self.emit_op(Opcode::Pop);
@@ -176,7 +221,11 @@ impl Parser {
     }
 
     fn emit_byte(&mut self, byte: u8) {
-        self.chunk.write(byte, self.previous.line);
+        self.functions
+            .last_mut()
+            .unwrap()
+            .chunk
+            .write(byte, self.previous.line);
     }
 
     fn emit_bytes(&mut self, a: u8, b: u8) {
@@ -201,24 +250,24 @@ impl Parser {
     fn emit_jump(&mut self, op: Opcode) -> usize {
         self.emit_byte(op as u8);
         self.emit_bytes(0xff, 0xff);
-        self.chunk.code.len() - 2
+        self.functions.last_mut().unwrap().chunk.code.len() - 2
     }
 
     fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.code.len() - offset - 2;
+        let jump = self.functions.last_mut().unwrap().chunk.code.len() - offset - 2;
 
         if jump > std::i16::MAX as usize {
             self.error("Jump is out of bounds");
         }
 
-        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
-        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
+        self.functions.last_mut().unwrap().chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
+        self.functions.last_mut().unwrap().chunk.code[offset + 1] = (jump & 0xff) as u8;
     }
 
     fn emit_loop(&mut self, loop_start: usize) {
         self.emit_op(Opcode::Loop);
 
-        let offset = self.chunk.code.len() - loop_start + 2;
+        let offset = self.functions.last_mut().unwrap().chunk.code.len() - loop_start + 2;
         if offset as u16 > std::u16::MAX {
             self.error("Loop offset is out of bounds");
         }
@@ -228,7 +277,7 @@ impl Parser {
     }
 
     fn make_constant(&mut self, value: Value) -> usize {
-        let constant = self.chunk.add_constant(value);
+        let constant = self.functions.last_mut().unwrap().chunk.add_constant(value);
         if constant > std::u8::MAX as usize {
             self.error("Too many constants in this chunk");
             0
@@ -251,6 +300,24 @@ impl Parser {
             TokenType::Bang => self.emit_op(Opcode::Not),
             _ => unreachable!("Impossible unary operator"),
         }
+    }
+
+    pub fn call(&mut self, _can_assign: bool) {
+        let mut num_params = 0;
+
+        if self.current.token_type.clone() != TokenType::RightParen {
+            while {
+                num_params += 1;
+                self.expression();
+
+                self.matches(TokenType::Comma)
+            } {}
+        }
+
+        self.consume(TokenType::RightParen, "Expected ) after arguments");
+
+        self.emit_op(Opcode::Call);
+        self.emit_byte(num_params);
     }
 
     pub fn binary(&mut self, _can_assign: bool) {
@@ -327,51 +394,29 @@ impl Parser {
     }
 
     pub fn variable(&mut self, can_assign: bool) {
-        if let TokenType::Identifier(name) = self.previous.token_type.clone() {
-            let (get_op, set_op, var) = match self.resolve_local(&self.previous) {
-                Ok(id) => (Opcode::GetLocal, Opcode::SetLocal, id),
-                Err(_) => (
-                    Opcode::GetGlobal,
-                    Opcode::SetGlobal,
-                    self.make_constant(Value::String(name)),
-                ),
-            };
-            if can_assign && self.matches(TokenType::Equal) {
-                self.expression();
-                self.emit_op(set_op);
-            } else {
-                self.emit_op(get_op);
-            }
-            self.emit_byte(var as u8);
-        }
-    }
-
-    fn variable_definition(&mut self, name: String) {
-        self.advance();
         let identifier = self.previous.clone();
-
-        if !self.matches(TokenType::Equal) {
-            unreachable!("Variable definition must be of the form [identifier = expression]");
-        }
-
-        self.expression();
-
-        // if current scope depth is 0 it must be a global variable
-        if self.scope_depth == 0 {
-            let global = self.make_constant(Value::String(name));
-            self.emit_op(Opcode::DefineGlobal);
-            self.emit_byte(global as u8);
-            return;
-        }
-
-        // otherwise check if the identifier has already been added to the local pool
-        let (set_op, constant) = match self.resolve_local(&identifier) {
-            Ok(id) => (Opcode::SetLocal, id),
-            Err(_) => (Opcode::SetGlobal, self.make_constant(Value::String(name))),
+        let name = match identifier.token_type.clone() {
+            TokenType::Identifier(name) => name,
+            _ => unreachable!("In variable() without name"),
         };
 
-        self.emit_op(set_op);
-        self.emit_byte(constant as u8);
+        let (get_op, set_op, constant) = match self.resolve_local(&identifier) {
+            Ok(id) => (Opcode::GetLocal, Opcode::SetLocal, id),
+            Err(_) => (
+                Opcode::GetGlobal,
+                Opcode::SetGlobal,
+                self.make_constant(Value::String(name)),
+            ),
+        };
+
+        if can_assign && self.matches(TokenType::Equal) {
+            self.expression();
+            self.emit_op(set_op);
+            self.emit_byte(constant as u8);
+        } else {
+            self.emit_op(get_op);
+            self.emit_byte(constant as u8);
+        }
     }
 
     fn add_local(&mut self, name: String) {
