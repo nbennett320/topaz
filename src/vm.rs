@@ -3,12 +3,14 @@ use crate::opcode::{from_u8, Opcode};
 use crate::value::Value;
 use crate::operator::Operator;
 
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct Vm {
-    stack: Vec<Value>,
-    globals: HashMap<String, Value>,
-    frames: Vec<CallFrame>,
+pub struct Vm<'a> {
+    stack: Vec<Value<'a>>,
+    globals: HashMap<String, Value<'a>>,
+    frames: Vec<CallFrame<'a>>,
 }
 
 pub enum InterpretError {
@@ -16,14 +18,14 @@ pub enum InterpretError {
     RuntimeError,
 }
 
-struct CallFrame {
-    function: Function,
+struct CallFrame<'a> {
+    function: Arc<&'a Function<'a>>,
     ip: usize,   // ip of caller to return to
     base: usize, // index of base of stack
 }
 
-impl CallFrame {
-    pub fn new(function: Function, base: usize) -> CallFrame {
+impl <'a> CallFrame<'a> {
+    pub fn new(function: Arc<&'a Function<'a>>, base: usize) -> CallFrame<'a> {
         CallFrame {
             function,
             ip: 0,
@@ -32,8 +34,8 @@ impl CallFrame {
     }
 }
 
-impl Vm {
-    pub fn new() -> Vm {
+impl <'a> Vm<'a> {
+    pub fn new() -> Vm<'a> {
         Vm {
             stack: Vec::new(),
             globals: HashMap::new(),
@@ -41,9 +43,10 @@ impl Vm {
         }
     }
 
-    pub fn run(&mut self, function: Function) -> Result<(), InterpretError> {
+    pub fn run(&mut self, function: &'a Function<'a>) -> Result<(), InterpretError> {
         // push "stack frame" of top level script onto stack
-        let cf = CallFrame::new(function, 0);
+        let arc = Arc::from(function);
+        let cf = CallFrame::new(arc, 0);
         self.frames.push(cf);
 
         loop {
@@ -118,7 +121,7 @@ impl Vm {
                         self.pop();
                     } else if let Value::Function(f) = constant {
                         self.globals
-                            .insert(f.name.clone(), Value::Function(f.clone()));
+                            .insert(f.name.clone(), Value::Function(f));
                     } else {
                         unreachable!("Did not receive a String in DefineGlobal")
                     }
@@ -182,7 +185,8 @@ impl Vm {
                         }
                     };
 
-                    let cf = CallFrame::new(f.clone(), self.stack.len() - num_args);
+                    let arc = std::sync::Arc::from(f);
+                    let cf = CallFrame::new(arc, self.stack.len() - num_args);
                     self.frames.push(cf);
                 }
                 _ => return Err(InterpretError::CompileError),
@@ -212,22 +216,22 @@ impl Vm {
         short
     }
 
-    fn read_constant(&mut self) -> Value {
+    fn read_constant(&mut self) -> Value<'a> {
         let byte = self.read_byte();
         self.frames.last_mut().unwrap().function.chunk.constants[byte as usize].clone()
     }
 
-    fn push(&mut self, value: Value) {
+    fn push(&mut self, value: Value<'a>) {
         self.stack.push(value)
     }
 
-    fn pop(&mut self) -> Value {
+    fn pop(&mut self) -> Value<'a> {
         self.stack.pop().unwrap()
     }
 
-    fn peek(&self, offset: usize) -> &Value {
+    fn peek(&self, offset: usize) -> &'a Value<'a> {
         let len = self.stack.len();
-        &self.stack[len - 1 - offset]
+        self.stack[len - 1 - offset].borrow_mut()
     }
 
     fn binary_op(&mut self, op: Operator) {

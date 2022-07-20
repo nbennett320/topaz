@@ -2,14 +2,14 @@ use crate::opcode::{from_u8, Opcode};
 use crate::value::Value;
 
 #[derive(Debug, Clone)]
-pub struct Chunk {
+pub struct Chunk<'a> {
     pub code: Vec<u8>,
-    pub constants: Vec<Value>,
+    pub constants: Vec<Value<'a>>,
     pub lines: Vec<usize>,
 }
 
-impl Chunk {
-    pub fn new() -> Chunk {
+impl <'a> Chunk<'a> {
+    pub fn new() -> Chunk<'a> {
         Chunk {
             code: Vec::new(),
             constants: Vec::new(),
@@ -22,7 +22,7 @@ impl Chunk {
         self.lines.push(line);
     }
 
-    pub fn add_constant(&mut self, value: Value) -> usize {
+    pub fn add_constant(&mut self, value: Value<'a>) -> usize {
         self.constants.push(value);
         self.constants.len() - 1
     }

@@ -7,16 +7,16 @@ pub enum FunctionType {
 }
 
 #[derive(Debug, Clone)]
-pub struct Function {
+pub struct Function<'a> {
     pub num_params: usize,
-    pub chunk: Chunk,
+    pub chunk: Chunk<'a>,
     pub name: String,
     pub native: bool,
     pub function_type: FunctionType,
 }
 
-impl Function {
-    pub fn new(name: String, function_type: FunctionType) -> Function {
+impl <'a> Function <'a> {
+    pub fn new(name: String, function_type: FunctionType) -> Function<'a> {
         Function {
             num_params: 0,
             chunk: Chunk::new(),

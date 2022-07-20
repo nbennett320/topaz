@@ -10,7 +10,7 @@ pub struct Parser {
     current: Token,
     previous: Token,
     scanner: Scanner,
-    functions: Vec<Function>,
+    functions: Vec<&'static Function<'static>>,
     locals: Vec<Local>,
     had_error: bool,
     end_flag: bool,
@@ -39,10 +39,10 @@ impl Parser {
         }
     }
 
-    pub fn compile(mut self) -> Result<Function, InterpretError> {
+    pub fn compile(mut self) -> Result<&'static Function<'static>, InterpretError> {
         // add top level functions to function stack
         self.functions
-            .push(Function::new(String::new(), FunctionType::Script));
+            .push(&Function::new(String::new(), FunctionType::Script));
 
         self.advance();
 
@@ -52,7 +52,7 @@ impl Parser {
 
         self.emit_constant(Value::Nil);
         self.emit_op(Opcode::Return);
-        Ok(self.functions[0].clone())
+        Ok(&self.functions[0])
     }
 
     fn expression(&mut self) {
@@ -98,7 +98,7 @@ impl Parser {
         };
 
         let f = Function::new(function_name, FunctionType::Fn);
-        self.functions.push(f);
+        self.functions.push(&f);
 
         self.advance();
 
@@ -242,7 +242,7 @@ impl Parser {
         self.emit_byte(op2 as u8);
     }
 
-    fn emit_constant(&mut self, value: Value) {
+    fn emit_constant(&mut self, value: Value<'static>) {
         let constant = self.make_constant(value) as u8;
         self.emit_bytes(Opcode::Constant as u8, constant);
     }
@@ -276,7 +276,7 @@ impl Parser {
         self.emit_byte((offset & 0xff) as u8);
     }
 
-    fn make_constant(&mut self, value: Value) -> usize {
+    fn make_constant(&mut self, value: Value<'static>) -> usize {
         let constant = self.functions.last_mut().unwrap().chunk.add_constant(value);
         if constant > std::u8::MAX as usize {
             self.error("Too many constants in this chunk");

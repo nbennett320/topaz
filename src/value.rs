@@ -2,21 +2,21 @@ use crate::function::Function;
 use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug, Clone)]
-pub enum Value {
+pub enum Value<'a> {
     Bool(bool),
     Nil,
     Number(f64),
     String(String),
-    Function(Function),
+    Function(&'a Function<'a>),
 }
 
-impl From<i64> for Value {
+impl <'a> From<i64> for Value<'a> {
     fn from(n: i64) -> Self {
         Value::Number(n as f64)
     }
 }
 
-impl Display for Value {
+impl <'a> Display for Value<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Value::Bool(x) => write!(f, "{}", x),
@@ -34,7 +34,7 @@ impl Display for Value {
     }
 }
 
-impl Value {
+impl <'a> Value<'a> {
     pub fn is_falsey(&self) -> bool {
         match self {
             Value::Nil => true,
