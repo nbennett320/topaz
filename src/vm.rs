@@ -117,17 +117,6 @@ impl Vm {
                 Opcode::Pop => {
                     self.pop();
                 }
-                Opcode::DefineGlobal => {
-                    let constant = self.read_constant();
-                    if let Value::String(name) = constant {
-                        self.globals.insert(name, self.peek(0).clone());
-                    } else if let Value::Function(f) = constant {
-                        self.globals
-                            .insert(f.name.clone(), Value::Function(f.clone()));
-                    } else {
-                        unreachable!("Did not receive a String in DefineGlobal")
-                    }
-                }
                 Opcode::GetGlobal => {
                     let constant = self.read_constant();
                     if let Value::String(name) = constant {
@@ -146,11 +135,13 @@ impl Vm {
                 }
                 Opcode::SetGlobal => {
                     let constant = self.read_constant();
-                    if let Value::String(name) = constant {
-                        self.globals.insert(name, self.peek(0).clone());
-                    } else {
-                        unreachable!("Did not receive a String in SetGlobal")
-                    }
+                    let (name, value) = match constant {
+                        Value::String(name) => (name, self.peek(0).clone()),
+                        Value::Function(f) => (f.name.clone(), Value::Function(f)),
+                        _ => unreachable!("Unknown value in SetGlobal"),
+                    };
+
+                    self.globals.insert(name, value);
                 }
                 Opcode::GetLocal => {
                     let base = self.frames.last_mut().unwrap().base;

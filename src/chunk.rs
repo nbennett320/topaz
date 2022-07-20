@@ -72,7 +72,6 @@ impl Chunk {
             Opcode::BitwiseOr => self.simple_instruction("BitwiseOr", offset),
             Opcode::Print => self.simple_instruction("Print", offset),
             Opcode::Pop => self.simple_instruction("Pop", offset),
-            Opcode::DefineGlobal => self.constant_instruction("DefineGlobal", offset),
             Opcode::GetGlobal => self.constant_instruction("GetGlobal", offset),
             Opcode::SetGlobal => self.constant_instruction("SetGlobal", offset),
             Opcode::GetLocal => self.byte_instruction("GetLocal", offset),

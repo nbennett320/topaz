@@ -136,7 +136,7 @@ impl Parser {
         let f = self.functions.pop().unwrap();
         f.chunk.disassemble(&f.name);
         let global = self.make_constant(Value::Function(f));
-        self.emit_op(Opcode::DefineGlobal);
+        self.emit_op(Opcode::SetGlobal);
         self.emit_byte(global as u8);
     }
 
