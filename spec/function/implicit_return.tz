@@ -1,0 +1,13 @@
+fn str() {
+	'implicit'
+}
+
+fn num() {
+	41 + 59
+}
+
+# expect: implicit
+print str()
+
+# expect: 100
+print num()

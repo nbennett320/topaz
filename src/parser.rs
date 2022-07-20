@@ -50,7 +50,6 @@ impl Parser {
             self.declaration();
         }
 
-        self.emit_constant(Value::Nil);
         self.emit_op(Opcode::Return);
         Ok(self.functions[0].clone())
     }
@@ -122,7 +121,12 @@ impl Parser {
         self.consume(TokenType::LeftBrace, "Expect '{' before function body");
 
         self.block();
-        self.emit_constant(Value::Nil);
+
+        // add implicit nil for empty functions
+        if self.functions.last_mut().unwrap().chunk.code.is_empty() {
+            self.emit_constant(Value::Nil);
+        }
+
         self.emit_op(Opcode::Return);
 
         let f = self.functions.pop().unwrap();
@@ -134,7 +138,6 @@ impl Parser {
 
     fn expression_statement(&mut self) {
         self.expression();
-        //self.emit_op(Opcode::Pop);
     }
 
     fn block(&mut self) {

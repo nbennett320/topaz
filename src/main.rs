@@ -21,6 +21,7 @@ use std::{
 
 fn repl() {
     let mut vm = Vm::new();
+    let mut line_num = 1;
     loop {
         print!("> ");
         stdout().flush().ok();
@@ -35,11 +36,18 @@ fn repl() {
         let res = Parser::new(line).compile();
         match res {
             Ok(func) => {
-                func.chunk.disassemble("repl chunk");
-                let _ = vm.run(func);
+                func.chunk
+                    .disassemble(format!("repl line {}", line_num).as_str());
+                let res = vm.run(func);
+                match res {
+                    Ok(value) => println!("{}", value),
+                    _ => todo!("Handle runtime error"),
+                }
             }
             Err(_) => println!("Compile error"),
         }
+
+        line_num += 1;
     }
 }
 
@@ -52,8 +60,7 @@ fn run_file(fname: &str) {
     let res = Parser::new(source).compile();
     match res {
         Ok(func) => {
-            func.chunk
-                .disassemble(format!("script {} chunk", fname).as_str());
+            func.chunk.disassemble(format!("script {}", fname).as_str());
             let _ = vm.run(func);
         }
         Err(_) => println!("Compile error"),

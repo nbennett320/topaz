@@ -1,7 +1,7 @@
 use crate::function::Function;
 use crate::opcode::{from_u8, Opcode};
-use crate::value::Value;
 use crate::operator::Operator;
+use crate::value::Value;
 
 use std::collections::HashMap;
 
@@ -41,7 +41,7 @@ impl Vm {
         }
     }
 
-    pub fn run(&mut self, function: Function) -> Result<(), InterpretError> {
+    pub fn run(&mut self, function: Function) -> Result<Value, InterpretError> {
         // push "stack frame" of top level script onto stack
         let cf = CallFrame::new(function, 0);
         self.frames.push(cf);
@@ -65,7 +65,7 @@ impl Vm {
                     self.frames.pop();
 
                     if self.frames.is_empty() {
-                        return Ok(());
+                        return Ok(result);
                     }
 
                     self.push(result);
@@ -106,7 +106,7 @@ impl Vm {
                 Opcode::BitwiseAnd => self.binary_op(Operator::Amp),
                 Opcode::BitwiseOr => self.binary_op(Operator::Pipe),
                 Opcode::Print => {
-                    print!("{}\n", self.pop());
+                    print!("{}\n", self.peek(0));
                 }
                 Opcode::Pop => {
                     self.pop();
@@ -115,7 +115,6 @@ impl Vm {
                     let constant = self.read_constant();
                     if let Value::String(name) = constant {
                         self.globals.insert(name, self.peek(0).clone());
-                        self.pop();
                     } else if let Value::Function(f) = constant {
                         self.globals
                             .insert(f.name.clone(), Value::Function(f.clone()));
@@ -143,7 +142,6 @@ impl Vm {
                     let constant = self.read_constant();
                     if let Value::String(name) = constant {
                         self.globals.insert(name, self.peek(0).clone());
-                        self.pop();
                     } else {
                         unreachable!("Did not receive a String in SetGlobal")
                     }
