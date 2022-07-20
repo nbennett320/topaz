@@ -21,6 +21,8 @@ pub enum TokenType {
     Mod,
     BitwiseAnd,
     BitwiseOr,
+    LeftBracket,  // [
+    RightBracket, // ]
 
     // 1 or 2 character tokens
     Bang,
@@ -152,6 +154,16 @@ impl TokenType {
                 prefix: None,
                 infix: Some(Parser::binary),
                 precedence: Precedence::Term,
+            },
+            TokenType::LeftBracket => &ParseRule {
+                prefix: Some(Parser::array),
+                infix: None,
+                precedence: Precedence::Primary,
+            },
+            TokenType::RightBracket => &ParseRule {
+                prefix: None,
+                infix: None,
+                precedence: Precedence::None,
             },
             TokenType::LogicalAnd => &ParseRule {
                 prefix: None,
@@ -324,6 +336,8 @@ impl Display for TokenType {
             TokenType::Mod => write!(f, "Mod"),
             TokenType::BitwiseAnd => write!(f, "BitwiseAnd"),
             TokenType::BitwiseOr => write!(f, "BitwiseOr"),
+            TokenType::RightBracket => write!(f, "RightBracket"),
+            TokenType::LeftBracket => write!(f, "LeftBracket"),
             TokenType::LogicalAnd => write!(f, "LogicalAnd"),
             TokenType::LogicalOr => write!(f, "LogicalOr"),
             TokenType::Bang => write!(f, "Bang"),

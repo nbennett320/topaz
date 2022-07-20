@@ -59,6 +59,8 @@ impl Scanner {
             '/' => Some(self.make_token(TokenType::Slash)),
             '*' => Some(self.make_token(TokenType::Star)),
             '%' => Some(self.make_token(TokenType::Mod)),
+            '[' => Some(self.make_token(TokenType::LeftBracket)),
+            ']' => Some(self.make_token(TokenType::RightBracket)),
             '&' => {
                 let token_type = if self.matches('&') {
                     TokenType::LogicalAnd
