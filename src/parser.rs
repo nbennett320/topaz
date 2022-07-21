@@ -209,7 +209,10 @@ impl Parser {
 
     pub fn string(&mut self, _can_assign: bool) {
         match &self.previous.token_type {
-            TokenType::String(s) => self.emit_constant(Value::String(s.to_string())),
+            TokenType::String(s) => {
+                let shared = s.to_string();
+                self.emit_constant(Value::String(shared));
+            }
             _ => unreachable!("No string"),
         }
     }

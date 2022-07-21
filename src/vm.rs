@@ -121,7 +121,10 @@ impl Vm {
                     let constant = self.read_constant();
                     if let Value::String(name) = constant {
                         match self.globals.get(&name) {
-                            Some(val) => self.push(val.clone()),
+                            Some(val) => {
+                                let shared = val.clone();
+                                self.push(shared);
+                            }
                             None => {
                                 self.runtime_error(
                                     format!("Undefined variable {}", &name).as_str(),
