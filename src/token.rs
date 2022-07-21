@@ -157,8 +157,8 @@ impl TokenType {
             },
             TokenType::LeftBracket => &ParseRule {
                 prefix: Some(Parser::array),
-                infix: None,
-                precedence: Precedence::Primary,
+                infix: Some(Parser::subscript),
+                precedence: Precedence::Subscript,
             },
             TokenType::RightBracket => &ParseRule {
                 prefix: None,

@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Opcode {
     Return = 0,
     Constant,
@@ -29,6 +30,8 @@ pub enum Opcode {
     Loop,
     Call,
     BuildArray,
+    GetSubscript,
+    SetSubscript,
 
     Unknown,
 }
@@ -66,6 +69,8 @@ impl Opcode {
             27 => Opcode::Loop,
             28 => Opcode::Call,
             29 => Opcode::BuildArray,
+            30 => Opcode::GetSubscript,
+            31 => Opcode::SetSubscript,
             _ => Opcode::Unknown,
         }
     }

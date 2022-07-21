@@ -192,6 +192,38 @@ impl Vm {
                     array.reverse();
                     self.push(Value::Array(array));
                 }
+                Opcode::GetSubscript => {
+                    let index = self.pop();
+                    let array = self.pop();
+                    match array {
+                        Value::Array(arr) => {
+                            let as_num = match index {
+                                Value::Number(n) => n,
+                                _ => unreachable!("not a valid index"),
+                            };
+                            self.push(arr[as_num as usize].clone())
+                        }
+                        _ => todo!(""),
+                    }
+                }
+                Opcode::SetSubscript => {
+                    let element = self.pop();
+                    let index = self.pop();
+                    let array = self.pop();
+
+                    let index = match index {
+                        Value::Number(n) => n.round() as usize,
+                        _ => unreachable!("not a valid index"),
+                    };
+
+                    match array {
+                        Value::Array(mut arr) => {
+                            arr[index] = element;
+                            self.push(Value::Array(arr));
+                        }
+                        _ => unreachable!("The value isn't an array!"),
+                    }
+                }
                 _ => return Err(InterpretError::CompileError),
             };
         }

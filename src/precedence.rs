@@ -10,6 +10,7 @@ pub enum Precedence {
     Factor,     // * /
     Unary,      // ! -
     Call,       // . ()
+    Subscript,  // []
     Primary,
 }
 
@@ -26,7 +27,8 @@ impl Precedence {
             7 => Precedence::Factor,
             8 => Precedence::Unary,
             9 => Precedence::Call,
-            10 => Precedence::Primary,
+            10 => Precedence::Subscript,
+            11 => Precedence::Primary,
             _ => Precedence::None,
         }
     }

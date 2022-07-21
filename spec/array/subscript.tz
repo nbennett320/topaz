@@ -1,0 +1,13 @@
+arr = ['eenie', 'meenie', 'miny', 'moe']
+
+# expect: miny
+print arr[2]
+
+# expect: [new value, meenie, miny, moe]
+arr[0] = 'new value'
+print arr
+
+# expect: moe
+v = arr[3]
+print v
+

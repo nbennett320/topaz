@@ -229,6 +229,18 @@ impl Parser {
         self.emit_byte(num_elements);
     }
 
+    pub fn subscript(&mut self, can_assign: bool) {
+        self.expression();
+        self.consume(TokenType::RightBracket, "Expect ']' after index");
+
+        if can_assign && self.matches(TokenType::Equal) {
+            self.expression();
+            self.emit_op(Opcode::SetSubscript);
+        } else {
+            self.emit_op(Opcode::GetSubscript);
+        }
+    }
+
     fn error(&mut self, msg: &str) {
         self.error_at(self.previous.clone(), msg);
     }
